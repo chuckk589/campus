@@ -1,15 +1,4 @@
-import {
-  BeforeCreate,
-  BeforeUpdate,
-  Collection,
-  Entity,
-  Enum,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  Unique,
-} from '@mikro-orm/core';
+import { BeforeCreate, BeforeUpdate, Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { QuizAttempt } from './QuizAttempt';
 import { CustomBaseEntity } from './CustomBaseEntity';
 

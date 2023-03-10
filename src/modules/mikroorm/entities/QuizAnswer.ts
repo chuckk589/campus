@@ -10,7 +10,7 @@ export class QuizAnswer extends CustomBaseEntity {
   @Property({ nullable: true, type: 'text' })
   html?: string;
 
-  @Property({ nullable: true, type: 'text', default: '{}' })
+  @Property({ nullable: true, type: 'text' })
   jsonAnswer?: string;
 
   @Property({ nullable: true })
