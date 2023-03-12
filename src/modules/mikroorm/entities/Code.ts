@@ -17,11 +17,13 @@ export class Code extends CustomBaseEntity {
   @Property()
   value!: string;
 
-  @Property()
-  expiresAt: Date = new Date();
-
-  @OneToMany(() => QuizAttempt, (attempt) => attempt.code)
-  attempt = new Collection<QuizAttempt>(this);
+  // @OneToMany(() => QuizAttempt, (attempt) => attempt.code)
+  // attempt = new Collection<QuizAttempt>(this);
+  @OneToOne({
+    entity: () => QuizAttempt,
+    mappedBy: 'code',
+  })
+  attempt: QuizAttempt;
 
   @Enum({ items: () => CodeStatus, default: CodeStatus.ACTIVE })
   status: CodeStatus;

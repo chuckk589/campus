@@ -15,7 +15,7 @@ export class LocalVersionStrategy extends PassportStrategy(Strategy, 'version') 
     if (version) {
       const validate = await this.authService.validateVersion(version);
       if (validate) {
-        return {};
+        return req.user || { version: version };
       } else {
         throw new UnauthorizedException('Invalid version');
       }

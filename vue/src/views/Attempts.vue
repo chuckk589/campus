@@ -34,7 +34,14 @@ export default {
           field: 'id',
           cellRenderer: 'agGroupCellRenderer',
         },
-        { field: 'userId', headerName: 'ID пользователя' },
+        {
+          field: 'status',
+          headerName: 'Статус',
+          valueFormatter: (params) =>
+            this.$ctable.quiz_status.find((c) => c.value == params.value)
+              ?.title,
+          sortable: true,
+        },
         { field: 'userName', headerName: 'Имя' },
         { field: 'questionAmount', headerName: 'Кол-во вопросов' },
         { field: 'cmid', headerName: 'CMID' },

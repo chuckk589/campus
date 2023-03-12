@@ -1,6 +1,6 @@
-import { RetrieveAnswerDto } from 'src/modules/answers/dto/retrieve-answer.dto';
 import { QuizAnswer } from 'src/modules/mikroorm/entities/QuizAnswer';
 import { QuizAttempt } from 'src/modules/mikroorm/entities/QuizAttempt';
+import { RetrieveAttemptAnswerDto } from './retrieve-attempt-answer.dto';
 
 export class RetrieveAttemptDto {
   constructor(attempt: QuizAttempt) {
@@ -8,19 +8,19 @@ export class RetrieveAttemptDto {
     this.attemptId = attempt.attemptId?.toString();
     this.questionAmount = attempt.questionAmount?.toString();
     this.cmid = attempt.cmid?.toString();
-    this.time = attempt.time?.toString();
     this.userId = attempt.user.id.toString();
     this.userName = attempt.user?.name;
     this.createdAt = attempt.createdAt;
-    this.answers = attempt.attemptAnswers.getItems().map((item) => new RetrieveAnswerDto(item.answer));
+    this.status = attempt.attemptStatus;
+    this.answers = attempt.attemptAnswers.getItems().map((attemptAnswer) => new RetrieveAttemptAnswerDto(attemptAnswer));
   }
   createdAt: Date;
   id: string;
   attemptId: string;
   questionAmount: string;
   cmid: string;
-  time: string;
+  status: string;
   userId: string;
   userName: string;
-  answers: RetrieveAnswerDto[];
+  answers: RetrieveAttemptAnswerDto[];
 }

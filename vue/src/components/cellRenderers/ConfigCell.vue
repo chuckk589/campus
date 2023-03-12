@@ -31,11 +31,6 @@ export default {
             value: this.params.data.value,
           },
           {
-            key: 'category',
-            label: 'Категория',
-            value: this.params.data.category,
-          },
-          {
             key: 'description',
             label: 'Описание',
             type: 'textarea',

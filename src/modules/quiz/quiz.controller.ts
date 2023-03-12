@@ -5,6 +5,7 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 import { AuthVersionGuard } from '../auth/guards/local-auth-version.guard';
 import { QuizAnswerRequest } from 'src/types/interfaces';
 import { JwtAuthChromeGuard } from '../auth/guards/jwt-auth-chrome.guard';
+import { FinishQuizDto } from './dto/finish-quiz.dto';
 
 @Controller({
   path: 'quiz',
@@ -18,18 +19,24 @@ export class QuizController {
   initNewQuiz(@Body() createQuizDto: CreateQuizDto) {
     return this.quizService.createQuiz(createQuizDto);
   }
-
-  @Get('answer')
-  @UseGuards(JwtAuthChromeGuard)
+  @Post('finish')
   @UseGuards(AuthVersionGuard)
+  @UseGuards(JwtAuthChromeGuard)
+  async finishQuiz(@Req() req: QuizAnswerRequest, @Body() finishQuizDto: FinishQuizDto) {
+    return this.quizService.finishQuiz(req.user.id, finishQuizDto);
+  }
+
+  @Post('answer/:page/attempt/:attempt')
+  @UseGuards(AuthVersionGuard)
+  @UseGuards(JwtAuthChromeGuard)
   getQuizAnswer(
     @Req() req: QuizAnswerRequest,
-    @Query('id') id: string,
-    @Query('attempt') attempt: string,
+    @Param('page') page: string,
+    @Param('attempt') attempt: string,
     @Headers('Session') session: string,
   ) {
     if (session) {
-      return this.quizService.getQuizAnswer(session, req.user.id, id, attempt);
+      return this.quizService.getQuizAnswer(session, req.user.id, page, attempt);
     } else {
       throw new HttpException('No session cookie', 400);
     }

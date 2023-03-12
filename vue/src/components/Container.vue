@@ -16,28 +16,28 @@
         </v-list-item>
         <v-list-item to="/codes" value="2" active-color="#1867C0">
           <template v-slot:prepend>
-            <v-icon class="mr-5" icon="mdi-account"></v-icon>
+            <v-icon class="mr-5" icon="mdi-qrcode-scan"></v-icon>
           </template>
 
           <v-list-item-title>Коды</v-list-item-title>
         </v-list-item>
         <v-list-item to="/answers" value="3" active-color="#1867C0">
           <template v-slot:prepend>
-            <v-icon class="mr-5" icon="mdi-account"></v-icon>
+            <v-icon class="mr-5" icon="mdi-chat-question"></v-icon>
           </template>
 
           <v-list-item-title>Шаблоны</v-list-item-title>
         </v-list-item>
         <v-list-item to="/attempts" value="4" active-color="#1867C0">
           <template v-slot:prepend>
-            <v-icon class="mr-5" icon="mdi-account"></v-icon>
+            <v-icon class="mr-5" icon="mdi-clipboard-list"></v-icon>
           </template>
 
           <v-list-item-title>Тестирования</v-list-item-title>
         </v-list-item>
         <v-list-item to="/settings" value="5" active-color="#1867C0">
           <template v-slot:prepend>
-            <v-icon class="mr-5" icon="mdi-account"></v-icon>
+            <v-icon class="mr-5" icon="mdi-cog"></v-icon>
           </template>
 
           <v-list-item-title>Конфиги</v-list-item-title>

@@ -5,7 +5,7 @@ export interface QuizAnswerRequest extends Request {
     name: string;
   };
 }
-export type RequestWithVersion = Request & { headers: { 'x-version': string } };
+export type RequestWithVersion = Request & { headers: { 'x-version': string } } & QuizAnswerRequest;
 
 export class HTMLCampusParser {
   private static bde_hash(text: string) {

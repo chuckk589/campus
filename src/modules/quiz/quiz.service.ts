@@ -4,15 +4,18 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AppConfigService } from '../app-config/app-config.service';
 import { Code, CodeStatus } from '../mikroorm/entities/Code';
-import { QuizAttempt } from '../mikroorm/entities/QuizAttempt';
+import { AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
 import { User } from '../mikroorm/entities/User';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import axios from 'axios';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
+import { QuestionResult, QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
 import { HTMLCampusParser } from 'src/types/interfaces';
 import { JSDOM } from 'jsdom';
 import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
+import { Config } from '../mikroorm/entities/Config';
+import { FinishQuizDto } from './dto/finish-quiz.dto';
+import { QuizResult } from '../mikroorm/entities/QuizResult';
 
 @Injectable()
 export class QuizService {
@@ -23,31 +26,41 @@ export class QuizService {
     @InjectPinoLogger('QuizService')
     private readonly logger: PinoLogger,
   ) {}
-
+  async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
+    const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
+    if (quiz.attemptStatus == AttemptStatus.FINISHED) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
+    const answers = quiz.attemptAnswers.getItems();
+    answers.forEach((answer) => {
+      if (finishQuizDto.incorrectQuestions.find((item) => +item - 1 == answer.nativeId)) {
+        answer.finalResult = QuestionResult.FAILED;
+      } else {
+        answer.finalResult = QuestionResult.SUCCESS;
+      }
+    });
+    quiz.attemptStatus = AttemptStatus.FINISHED;
+    quiz.result = new QuizResult(finishQuizDto.summaryData);
+    await this.em.persistAndFlush(quiz);
+  }
   async createQuiz(createQuizDto: CreateQuizDto) {
     const code = await this.em.findOne(Code, { value: createQuizDto.code });
     if (code) {
       if (code.status !== CodeStatus.ACTIVE) {
-        throw new HttpException('Code is not active', 400);
+        throw new HttpException('Код уже активирован', 400);
       } else {
         const existingUser = await this.findOrCreateUser(createQuizDto.user);
         const newQuizAttempt = this.em.create(QuizAttempt, {
           code: code,
           user: existingUser,
           cmid: createQuizDto.cmid,
-          time: createQuizDto.time,
         });
         code.status = CodeStatus.USED;
         await this.em.persistAndFlush([newQuizAttempt, code]);
         await wrap(newQuizAttempt).init();
-        const token = this.jwtService.sign(
-          { id: newQuizAttempt.id, cmid: newQuizAttempt.cmid, time: newQuizAttempt.time },
-          { expiresIn: '1h', secret: this.appConfigService.get<string>('jwt_secret') },
-        );
+        const token = this.jwtService.sign({ id: newQuizAttempt.id }, { secret: this.appConfigService.get<string>('jwt_secret') });
         return { token };
       }
     } else {
-      throw new HttpException('Code not found', 404);
+      throw new HttpException('Неверный код', 404);
     }
   }
   async findOrCreateUser(user: { name: string; id: string }) {
@@ -65,23 +78,32 @@ export class QuizService {
 
   async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, quizAttemptId: string) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +quizId }, { populate: ['attemptAnswers.answer'] });
-    if (quiz.attemptAnswers.toArray().length == 0) {
+    if (quiz.attemptAnswers.length == 0) {
       //initial call, need to parse quiz data
       quiz.attemptId = quizAttemptId;
       await this.parseQuizData(cookie, quiz);
     }
-    const targetAnswer = quiz.attemptAnswers.toArray().find((item) => item.nativeId == +questionNativeId).answer;
-    if (targetAnswer) {
-      if (targetAnswer.jsonAnswer) {
-        return {
-          answer: targetAnswer.jsonAnswer,
-          type: targetAnswer.question_type,
-        };
-      } else {
-        return { status: HttpStatus.NO_CONTENT };
-      }
+    if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
+
+    const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
+    const progress = quiz.attemptAnswers
+      .getItems()
+      .sort((a, b) => a.nativeId - b.nativeId)
+      .map((item) => item.answered);
+    if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
+    if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED', progress: progress };
+    if (attemptAnswer.answer.jsonAnswer) {
+      attemptAnswer.answered = true;
+      const delay = (await this.em.findOne(Config, { name: 'QUESTION_TIME' })).value.split('-');
+      await this.em.persistAndFlush(quiz);
+      return {
+        delay: Math.floor(Math.random() * (+delay[1] - +delay[0]) + +delay[0]),
+        answer: attemptAnswer.answer.jsonAnswer,
+        type: attemptAnswer.answer.question_type,
+        progress: progress,
+      };
     } else {
-      return new HttpException('Answer not found', 404);
+      return { status: HttpStatus.NO_CONTENT, progress: progress, error: 'NOANSWER' };
     }
   }
 
@@ -112,6 +134,7 @@ export class QuizService {
         }),
       );
       quiz.questionAmount = questions.length;
+      quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
     }
     await wrap(quiz).init();
   }

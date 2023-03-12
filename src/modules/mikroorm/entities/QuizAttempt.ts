@@ -1,10 +1,16 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Code } from './Code';
 import { CustomBaseEntity } from './CustomBaseEntity';
 import { QuizAnswer } from './QuizAnswer';
 import { QuizAttemptAnswer } from './QuizAttemptAnswer';
+import { QuizResult } from './QuizResult';
 import { User } from './User';
 // import { compare, hash } from 'bcrypt';
+export enum AttemptStatus {
+  FINISHED = 'finished',
+  IN_PROGRESS = 'in_progress',
+  INITIATED = 'initiated',
+}
 
 @Entity()
 export class QuizAttempt extends CustomBaseEntity {
@@ -17,18 +23,24 @@ export class QuizAttempt extends CustomBaseEntity {
   @Property({ default: 0 })
   questionAmount?: number;
 
-  @Property({ nullable: true })
-  cmid?: string;
+  @Enum({ items: () => AttemptStatus, default: AttemptStatus.INITIATED })
+  attemptStatus!: AttemptStatus;
 
   @Property({ nullable: true })
-  time?: string;
+  cmid?: string;
 
   @ManyToOne({ entity: () => User })
   user?: User;
 
-  @ManyToOne({ entity: () => Code })
+  @OneToOne({ entity: () => Code })
   code?: Code;
 
   @OneToMany(() => QuizAttemptAnswer, (item) => item.attempt)
   attemptAnswers = new Collection<QuizAttemptAnswer>(this);
+
+  @OneToOne({
+    entity: () => QuizResult,
+    mappedBy: 'attempt',
+  })
+  result?: QuizResult;
 }

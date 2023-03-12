@@ -36,7 +36,6 @@ export default {
         },
         { field: 'name', headerName: 'Имя' },
         { field: 'value', headerName: 'Значение' },
-        { field: 'category', headerName: 'Категория' },
         { field: 'description', headerName: 'Описание' },
         {
           field: 'action',

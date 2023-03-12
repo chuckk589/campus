@@ -10,14 +10,11 @@ class CreateQuizDtoUser {
 }
 
 export class CreateQuizDto {
-  @IsString()
+  @IsString({ message: 'Отсутствует обязательный параметр - код' })
   code!: string;
 
   @IsString()
   cmid!: string;
-
-  @IsNumberString()
-  time!: string;
 
   @ValidateNested()
   @IsObject()
