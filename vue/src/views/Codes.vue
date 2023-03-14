@@ -69,14 +69,14 @@ export default {
           headerName: 'Дата создания',
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
         },
-        {
-          field: 'action',
-          headerName: '',
-          filter: false,
-          sortable: false,
-          maxWidth: 70,
-          cellRenderer: 'CodeCell',
-        },
+        // {
+        //   field: 'action',
+        //   headerName: '',
+        //   filter: false,
+        //   sortable: false,
+        //   maxWidth: 70,
+        //   cellRenderer: 'CodeCell',
+        // },
       ],
 
       gridApi: null,
@@ -93,7 +93,7 @@ export default {
   beforeUnmount() {
     this.$emitter.off('delete-code');
     this.$emitter.off('new-code');
-    this.$emitter.off('edit-code');
+    // this.$emitter.off('edit-code');
   },
   methods: {
     onGridReady(params) {
@@ -119,13 +119,13 @@ export default {
       this.$emitter.on('new-code', (evt) => {
         setTimeout(() => this.gridApi.applyTransaction({ add: evt }), 0);
       });
-      this.$emitter.on('edit-code', (evt) => {
-        console.log(evt);
-        const index = this.rowData.findIndex((c) => c.id == evt.id);
-        this.rowData[index] = evt;
-        this.gridApi.applyTransaction({ update: [evt] });
-        this.gridApi.refreshCells({ force: true });
-      });
+      // this.$emitter.on('edit-code', (evt) => {
+      //   console.log(evt);
+      //   const index = this.rowData.findIndex((c) => c.id == evt.id);
+      //   this.rowData[index] = evt;
+      //   this.gridApi.applyTransaction({ update: [evt] });
+      //   this.gridApi.refreshCells({ force: true });
+      // });
     },
     addCodes() {
       this.$emitter.emit('openModal', {

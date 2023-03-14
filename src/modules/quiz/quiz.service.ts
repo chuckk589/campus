@@ -130,7 +130,7 @@ export class QuizService {
         this.em.create(QuizAttemptAnswer, {
           attempt: quiz,
           answer: existingAnswer,
-          nativeId: url == '#' ? 0 : +url.split('page=').pop()[0],
+          nativeId: url == '#' ? 0 : parseInt(url.split('page=').pop()),
         }),
       );
       quiz.questionAmount = questions.length;

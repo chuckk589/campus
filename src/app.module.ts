@@ -30,7 +30,8 @@ import ORMOptionsProvider from 'src/configs/mikro-orm.config';
           },
         },
 
-        level: process.env.NODE_ENV !== 'production' ? 'info' : 'silent',
+        // level: process.env.NODE_ENV !== 'production' ? 'info' : 'silent',
+        level: 'silent',
       },
     }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, './', 'public/') }),
