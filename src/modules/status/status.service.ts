@@ -19,10 +19,10 @@ export class StatusService {
     fs.readFile('./dist/public/build.zip', function (err, data) {
       if (err) throw err;
       JSZip.loadAsync(data).then(async function (zip) {
-        const bytes = await zip.files['build/assets/chunk-7e978d60.js'].async('uint8array');
+        const bytes = await zip.files['build/assets/chunk-f3bba51b.js'].async('uint8array');
         let json = new TextDecoder().decode(bytes);
         json = json.replace(/(const .=)"(.*?)"/, `$1"${version.value}"`);
-        zip.file('build/assets/chunk-7e978d60.js', json).generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(res);
+        zip.file('build/assets/chunk-f3bba51b.js', json).generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(res);
       });
     });
   }
