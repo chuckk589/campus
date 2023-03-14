@@ -14,6 +14,7 @@ import { QuizModule } from './modules/quiz/quiz.module';
 import { CodeModule } from './modules/code/code.module';
 import { AnswersModule } from './modules/answers/answers.module';
 import { AttemptModule } from './modules/attempt/attempt.module';
+import { ResultsModule } from './modules/results/results.module';
 import ORMOptionsProvider from 'src/configs/mikro-orm.config';
 
 @Module({
@@ -42,6 +43,7 @@ import ORMOptionsProvider from 'src/configs/mikro-orm.config';
     CodeModule,
     AnswersModule,
     AttemptModule,
+    ResultsModule,
   ],
   controllers: [],
   providers: [],

@@ -20,7 +20,7 @@
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 export default {
-  name: 'UsersView',
+  name: 'ResultsView',
   components: {
     AgGridVue,
   },
@@ -28,20 +28,19 @@ export default {
     return {
       columnDefs: [
         {
-          headerName: 'ID',
-          field: 'id',
+          headerName: 'Attempt ID',
+          field: 'attemptId',
           maxWidth: 150,
         },
-        { field: 'userId', headerName: 'ID кампус' },
-        { field: 'name', headerName: 'Имя' },
-        {
-          field: 'createdAt',
-          headerName: 'Дата регистрации',
-          sortable: true,
-          valueFormatter: (params) => new Date(params.value).toLocaleString(),
-        },
+        { field: 'userName', headerName: 'Имя' },
+        { field: 'startedAt', headerName: 'Начат' },
+        { field: 'finishedAt', headerName: 'Закончен' },
+        { field: 'status', headerName: 'Статус' },
+        { field: 'timeElapsed', headerName: 'Затраченное время' },
+        { field: 'points', headerName: 'Баллы' },
+        { field: 'mark', headerName: 'Оценка' },
+        { field: 'feedback', headerName: 'Отзыв' },
       ],
-      defaultCsvExportParams: null,
       gridApi: null,
       defaultColDef: {
         sortable: true,
@@ -57,7 +56,7 @@ export default {
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
-      this.$http({ method: 'GET', url: `/v1/user/` }).then((res) => {
+      this.$http({ method: 'GET', url: `/v1/results/` }).then((res) => {
         this.rowData = res.data;
         this.gridApi.setRowData(this.rowData);
       });

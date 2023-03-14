@@ -31,6 +31,7 @@ export class AnswersService {
           const answer = new QuizAnswer();
           answer.jsonAnswer = json;
           answer.question_hash = hash;
+          answer.question_type = -1;
           result.success++;
           answers.push(answer);
         } else {

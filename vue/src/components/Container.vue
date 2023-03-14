@@ -50,7 +50,14 @@
 
           <v-list-item-title>Тестирования</v-list-item-title>
         </v-list-item>
-        <v-list-item to="/settings" value="5" active-color="#1867C0">
+        <v-list-item to="/results" value="5" active-color="#1867C0">
+          <template v-slot:prepend>
+            <v-icon class="mr-5" icon="mdi-trophy"></v-icon>
+          </template>
+
+          <v-list-item-title>Результаты</v-list-item-title>
+        </v-list-item>
+        <v-list-item to="/settings" value="6" active-color="#1867C0">
           <template v-slot:prepend>
             <v-icon class="mr-5" icon="mdi-cog"></v-icon>
           </template>

@@ -1,30 +1,42 @@
 import { EntityManager } from '@mikro-orm/core';
 import { HttpException, Injectable, Res } from '@nestjs/common';
 import { hash } from 'bcrypt';
-import { CodeStatus } from '../mikroorm/entities/Code';
+import { Code, CodeStatus } from '../mikroorm/entities/Code';
 import { Config } from '../mikroorm/entities/Config';
 import { RetrieveStatusDto } from './dto/retrieve-status.dto';
 import { UpdateConfigDto } from './dto/update-config.dto';
 import { Response } from 'express';
-import { AttemptStatus } from '../mikroorm/entities/QuizAttempt';
+import { AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
 import { QuestionResult } from '../mikroorm/entities/QuizAttemptAnswer';
 import JSZip from 'jszip';
 import fs from 'fs';
+import { User } from '../mikroorm/entities/User';
 
 @Injectable()
 export class StatusService {
   constructor(private readonly em: EntityManager) {}
   async getCurrentVersion(res: Response) {
-    const version = await this.em.findOne(Config, { name: 'VERSION' });
+    const data = await this.em.find(Config, { name: { $in: ['HOSTNAME', 'VERSION'] } });
+    if (data.length !== 2) throw new HttpException('Не удалось получить версию', 500);
+    const version = data.find((item) => item.name === 'VERSION');
+    const hostname = data.find((item) => item.name === 'HOSTNAME');
     fs.readFile('./dist/public/build.zip', function (err, data) {
       if (err) throw err;
-      JSZip.loadAsync(data).then(async function (zip) {
-        const bytes = await zip.files['build/assets/chunk-f3bba51b.js'].async('uint8array');
-        let json = new TextDecoder().decode(bytes);
-        json = json.replace(/(const .=)"(.*?)"/, `$1"${version.value}"`);
-        zip.file('build/assets/chunk-f3bba51b.js', json).generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(res);
+      JSZip.loadAsync(data).then(async function (zip: JSZip & { files: { [key: string]: JSZip.JSZipObject & { _data: any } } }) {
+        const chunkNames = Object.keys(zip.files).filter((item) => item.match(/build\/assets\/chunk-.*?\.js/));
+        const smallestFileName = chunkNames.reduce((prev, curr) =>
+          zip.files[prev]._data.uncompressedSize < zip.files[curr]._data.uncompressedSize ? prev : curr,
+        );
+        const json = `const t="${version.value}",o="${hostname.value}";export{o as H,t as V};`;
+        zip.file(smallestFileName, json).generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(res);
       });
     });
+  }
+  async drop() {
+    const quizes = await this.em.find(QuizAttempt, {}, { populate: ['attemptAnswers', 'result'] });
+    const codes = await this.em.find(Code, {});
+    const users = await this.em.find(User, {});
+    await this.em.removeAndFlush([...quizes, ...codes, ...users]);
   }
   // async getSession(retrieveSessionDto: RetrieveSessionDto) {
   //   axios

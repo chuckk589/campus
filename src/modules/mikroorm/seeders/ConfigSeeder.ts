@@ -19,5 +19,10 @@ export class ConfigSeeder extends Seeder {
       value: '4-10',
       description: 'Время на ответ на вопрос мин - макс, в секундах, через дефис',
     });
+    em.create(Config, {
+      name: 'HOSTNAME',
+      value: 'http://195.161.114.112:3000',
+      description: 'Адрес сервера, используется при генерации расширения',
+    });
   }
 }

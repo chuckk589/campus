@@ -35,12 +35,13 @@ export class QuizAttempt extends CustomBaseEntity {
   @OneToOne({ entity: () => Code })
   code?: Code;
 
-  @OneToMany(() => QuizAttemptAnswer, (item) => item.attempt)
+  @OneToMany(() => QuizAttemptAnswer, (item) => item.attempt, { orphanRemoval: true })
   attemptAnswers = new Collection<QuizAttemptAnswer>(this);
 
   @OneToOne({
     entity: () => QuizResult,
     mappedBy: 'attempt',
+    orphanRemoval: true,
   })
   result?: QuizResult;
 }

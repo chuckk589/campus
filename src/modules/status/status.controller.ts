@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import { UpdateConfigDto } from './dto/update-config.dto';
@@ -8,7 +8,7 @@ import { StatusService } from './status.service';
   path: 'status',
   version: '1',
 })
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class StatusController {
   constructor(private readonly statusService: StatusService) {}
 
@@ -35,5 +35,9 @@ export class StatusController {
   getCurrentVersion(@Res() res: Response) {
     res.attachment();
     return this.statusService.getCurrentVersion(res);
+  }
+  @Delete('/drop/')
+  drop() {
+    return this.statusService.drop();
   }
 }

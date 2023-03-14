@@ -4,9 +4,19 @@
       @click="getExtension"
       class="mr-2"
       size="small"
+      :loading="loading"
+      :disabled="loading"
       color="success"
       variant="outlined"
       >Сгенерировать расширение</v-btn
+    >
+    <v-btn
+      @click="dropEverything"
+      class="mr-2"
+      size="small"
+      color="error"
+      variant="outlined"
+      >Очистить все</v-btn
     >
   </div>
   <AgGridVue
@@ -66,25 +76,40 @@ export default {
         return params.data.id;
       },
       rowData: [],
+      loading: false,
     };
   },
   beforeUnmount() {
     this.$emitter.off('edit-config');
+    this.$emitter.off('drop-db');
   },
   methods: {
     getExtension() {
+      this.loading = true;
       this.$http({
         method: 'GET',
         url: `/v1/status/version/`,
         responseType: 'blob',
-      }).then((res) => {
-        const url = window.URL.createObjectURL(new Blob([res.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'filename.zip');
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+      })
+        .then((res) => {
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'campus-chrome.zip');
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    dropEverything() {
+      this.$emitter.emit('openDialog', {
+        header: 'Очистка базы данных',
+        message:
+          'Вы уверены, что хотите удалить все данные? (шаблоны и настройки затронуты не будут)',
+        eventName: 'drop-db',
       });
     },
     onGridReady(params) {
@@ -96,6 +121,18 @@ export default {
       this.$emitter.on('edit-config', (evt) => {
         const rowNode = this.gridApi.getRowNode(evt.id);
         rowNode.setData(evt);
+      });
+      this.$emitter.on('drop-db', (id) => {
+        this.$http({
+          method: 'DELETE',
+          url: `/v1/status/drop`,
+        }).then(() => {
+          this.$emitter.emit('alert', {
+            header: 'Готово',
+            color: 'info',
+            text: `Данные успешно удалены`,
+          });
+        });
       });
     },
   },

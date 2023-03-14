@@ -125,6 +125,9 @@ export class QuizService {
           question_type: questionData.resultype,
           html: questionPage.window.document.querySelector('.formulation.clearfix').innerHTML,
         });
+      } else if (existingAnswer.question_type == -1) {
+        //update questions loaded from archive
+        existingAnswer.question_type = questionData.resultype;
       }
       quiz.attemptAnswers.add(
         this.em.create(QuizAttemptAnswer, {
