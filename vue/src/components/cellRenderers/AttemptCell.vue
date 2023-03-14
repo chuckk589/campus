@@ -5,31 +5,31 @@
       class="ma-2"
       variant="text"
       icon="mdi-pencil"
-      @click="view"
+      @click="edit"
     ></v-btn>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'CodeCell',
+  name: 'AttemptCell',
   data() {
     return {};
   },
   methods: {
-    view() {
+    edit() {
       this.$emitter.emit('openModal', {
-        url: `/code/${this.params.data.id}`,
+        url: `/attempt/${this.params.data.id}`,
         method: 'PUT',
-        header: this.params.data.value,
-        eventName: 'edit-code',
+        header: `Попытка №${this.params.data.attemptId}`,
+        eventName: 'edit-attempt',
         fields: [
           {
             key: 'status',
             label: 'Статус',
             type: 'select',
             value: this.params.data.status,
-            options: this.$ctable.code_status,
+            options: this.$ctable.quiz_status,
           },
         ],
       });

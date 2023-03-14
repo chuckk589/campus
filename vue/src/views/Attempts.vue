@@ -21,36 +21,49 @@
 
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
+import AttemptCell from '@/components/cellRenderers/AttemptCell.vue';
+import AttemptAnswerCell from '@/components/cellRenderers/AttemptAnswerCell.vue';
+import AnswerCell from '@/components/cellRenderers/AnswerCell.vue';
 export default {
   name: 'AttemptsView',
   components: {
     AgGridVue,
+    // eslint-disable-next-line vue/no-unused-components
+    AttemptCell,
+    // eslint-disable-next-line vue/no-unused-components
+    AttemptAnswerCell,
+    // eslint-disable-next-line vue/no-unused-components
+    AnswerCell,
   },
   data() {
     return {
       columnDefs: [
         {
-          headerName: 'ID',
-          field: 'id',
+          field: 'attemptId',
+          headerName: 'Attempt ID',
           cellRenderer: 'agGroupCellRenderer',
         },
+        { field: 'userName', headerName: 'Имя' },
+        { field: 'questionAmount', headerName: 'Кол-во вопросов' },
+        { field: 'cmid', headerName: 'CMID' },
         {
           field: 'status',
           headerName: 'Статус',
           valueFormatter: (params) =>
             this.$ctable.quiz_status.find((c) => c.value == params.value)
               ?.title,
-          sortable: true,
         },
-        { field: 'userName', headerName: 'Имя' },
-        { field: 'questionAmount', headerName: 'Кол-во вопросов' },
-        { field: 'cmid', headerName: 'CMID' },
-        { field: 'attemptId', headerName: 'Attempt ID' },
         {
           field: 'createdAt',
           headerName: 'Дата создания',
-          sortable: true,
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
+        },
+        {
+          field: 'action',
+          headerName: '',
+          filter: false,
+          sortable: false,
+          cellRenderer: 'AttemptCell',
         },
       ],
       gridApi: null,
@@ -62,18 +75,47 @@ export default {
       detailCellRendererParams: {
         detailGridOptions: {
           suppressCellFocus: true,
+          detailCellRenderer: 'AnswerCell',
+          detailCellRendererParams: {
+            url: '/v1/attempt/pattern/',
+          },
+          masterDetail: true,
+          detailRowAutoHeight: true,
           columnDefs: [
             {
+              field: 'nativeId',
+              cellRenderer: 'agGroupCellRenderer',
               headerName: 'ID',
-              field: 'id',
+              maxWidth: 150,
+              valueFormatter: (params) => +params.value + 1,
             },
-            { field: 'question_hash', headerName: 'Хэш вопроса' },
-            { field: 'question_type', headerName: 'Тип' },
+            {
+              field: 'answered',
+              headerName: 'Получен ответ',
+              valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
+            },
+            { field: 'jsonAnswer', headerName: 'JSON' },
+            {
+              field: 'result',
+              headerName: 'Результат',
+              valueFormatter: (params) =>
+                this.$ctable.que_result.find((c) => c.value == params.value)
+                  ?.title,
+            },
+            {
+              field: 'action',
+              headerName: '',
+              maxWidth: 70,
+              cellRenderer: 'AttemptAnswerCell',
+            },
           ],
           defaultColDef: {
             sortable: true,
             filter: true,
             flex: 1,
+          },
+          getDetailRowData: (params) => {
+            params.successCallback(params.data.children);
           },
         },
         getDetailRowData: (params) => {
@@ -86,6 +128,11 @@ export default {
       rowData: [],
     };
   },
+  beforeUnmount() {
+    this.$emitter.off('edit-attempt');
+    this.$emitter.off('edit-attempt-answer');
+    this.$emitter.off('edit-answer');
+  },
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
@@ -93,7 +140,39 @@ export default {
         this.rowData = res.data;
         this.gridApi.setRowData(this.rowData);
       });
+      this.$emitter.on('edit-attempt', (evt) => {
+        const index = this.rowData.findIndex((c) => c.id == evt.id);
+        this.rowData[index] = evt;
+        this.gridApi.applyTransaction({ update: [evt] });
+        this.gridApi.refreshCells({ force: true });
+      });
+      this.$emitter.on('edit-attempt-answer', (evt) => {
+        const row = this.rowData.find((c) =>
+          c.answers.find((d) => d.id == evt.id),
+        );
+        row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
+        setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
+      });
+      this.$emitter.on('edit-answer', (evt) => {
+        const row = this.rowData.find((c) =>
+          c.answers.find((d) => d.id == evt.id),
+        );
+        row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
+        setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
+      });
     },
   },
 };
 </script>
+
+<style>
+.r0,
+.r1 {
+  line-height: 1.7;
+  font-variant-ligatures: none;
+  box-sizing: border-box;
+  display: flex;
+  margin: 0.25rem 0;
+  align-items: flex-start;
+}
+</style>

@@ -11,6 +11,9 @@ export enum QuestionResult {
 
 @Entity()
 export class QuizAttemptAnswer extends CustomBaseEntity {
+  @PrimaryKey()
+  id!: number;
+
   @Property()
   nativeId?: number;
 
@@ -20,11 +23,9 @@ export class QuizAttemptAnswer extends CustomBaseEntity {
   @Enum({ items: () => QuestionResult, default: QuestionResult.DEFAULT })
   finalResult!: QuestionResult;
 
-  @ManyToOne(() => QuizAttempt, { primary: true })
+  @ManyToOne(() => QuizAttempt)
   attempt: QuizAttempt;
 
-  @ManyToOne(() => QuizAnswer, { primary: true })
+  @ManyToOne(() => QuizAnswer)
   answer: QuizAnswer;
-
-  [PrimaryKeyType]?: [number, number];
 }

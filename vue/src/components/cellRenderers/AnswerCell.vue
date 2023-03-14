@@ -1,10 +1,8 @@
 <template>
   <v-card>
-    <div v-html="params.data.html"></div>
+    <div v-html="params.data.html" class="ma-3"></div>
     <v-card-actions>
-      <v-btn variant="outlined" color="success" @click="save">
-        Сохранить
-      </v-btn>
+      <v-btn variant="flat" color="success" @click="save"> Сохранить </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -20,7 +18,7 @@ export default {
     save() {
       this.$http({
         method: 'PUT',
-        url: `/v1/answers/${this.params.data.id}`,
+        url: `${this.params.url}/${this.params.data.id}`,
         data: {
           json: HTMLCampusParser.bde_mainfunc(this.params.data.question_type),
         },

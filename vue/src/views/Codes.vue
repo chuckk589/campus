@@ -9,6 +9,7 @@
         variant="outlined"
         >Добавить код</v-btn
       >
+
       <v-btn @click="deleteCodes" size="small" color="error" variant="outlined"
         >Удалить выбранное</v-btn
       >
@@ -51,6 +52,7 @@ export default {
         {
           headerName: 'ID',
           field: 'id',
+          maxWidth: 150,
           headerCheckboxSelection: true,
           checkboxSelection: true,
         },
@@ -61,12 +63,10 @@ export default {
           valueFormatter: (params) =>
             this.$ctable.code_status.find((c) => c.value == params.value)
               ?.title,
-          sortable: true,
         },
         {
           field: 'createdAt',
           headerName: 'Дата создания',
-          sortable: true,
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
         },
         {
@@ -74,6 +74,7 @@ export default {
           headerName: '',
           filter: false,
           sortable: false,
+          maxWidth: 70,
           cellRenderer: 'CodeCell',
         },
       ],
@@ -140,6 +141,7 @@ export default {
         ],
       });
     },
+
     deleteCodes() {
       const selectedRows = this.gridApi.getSelectedRows();
       if (!selectedRows.length) return;

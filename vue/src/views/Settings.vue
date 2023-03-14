@@ -1,4 +1,14 @@
 <template>
+  <div class="d-flex mb-2">
+    <v-btn
+      @click="getExtension"
+      class="mr-2"
+      size="small"
+      color="success"
+      variant="outlined"
+      >Сгенерировать расширение</v-btn
+    >
+  </div>
   <AgGridVue
     class="ag-theme-alpine"
     :column-defs="columnDefs"
@@ -42,6 +52,7 @@ export default {
           headerName: '',
           filter: false,
           sortable: false,
+          maxWidth: 70,
           cellRenderer: 'ConfigCell',
         },
       ],
@@ -61,6 +72,21 @@ export default {
     this.$emitter.off('edit-config');
   },
   methods: {
+    getExtension() {
+      this.$http({
+        method: 'GET',
+        url: `/v1/status/version/`,
+        responseType: 'blob',
+      }).then((res) => {
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'filename.zip');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      });
+    },
     onGridReady(params) {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/status/configs/` }).then((res) => {

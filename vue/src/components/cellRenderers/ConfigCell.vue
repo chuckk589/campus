@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="d-flex justify-center">
     <v-btn
       density="compact"
       class="ma-2"

@@ -8,9 +8,21 @@
       :variant="filtering ? 'flat' : 'outlined'"
       >Требующие ответа</v-btn
     >
-    <v-btn @click="deleteAnswers" size="small" color="error" variant="outlined"
-      >Удалить выбранное</v-btn
+    <v-btn
+      @click="addPatterns"
+      class="mr-2"
+      size="small"
+      color="success"
+      variant="outlined"
+      >Импорт шаблонов</v-btn
     >
+    <input
+      ref="uploader"
+      class="d-none"
+      type="file"
+      accept=".zip"
+      @input="onFileChanged"
+    />
   </div>
   <AgGridVue
     class="ag-theme-alpine"
@@ -27,6 +39,7 @@
     detailRowAutoHeight="true"
     pagination
     :detailCellRenderer="detailCellRenderer"
+    :detailCellRendererParams="detailCellRendererParams"
     :isExternalFilterPresent="isExternalFilterPresent"
     :doesExternalFilterPass="doesExternalFilterPass"
     masterDetail
@@ -50,11 +63,12 @@ export default {
         {
           headerName: 'ID',
           cellRenderer: 'agGroupCellRenderer',
+          maxWidth: 150,
           field: 'id',
         },
         { field: 'question_hash', headerName: 'Хэш вопроса' },
 
-        { field: 'question_type', headerName: 'Тип' },
+        { field: 'question_type', headerName: 'Тип', maxWidth: 100 },
         { field: 'jsonAnswer', headerName: 'JSON' },
         {
           field: 'createdAt',
@@ -63,8 +77,10 @@ export default {
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
         },
       ],
-      defaultCsvExportParams: null,
       detailCellRenderer: 'AnswerCell',
+      detailCellRendererParams: {
+        url: '/v1/answers/',
+      },
       gridApi: null,
       defaultColDef: {
         sortable: true,
@@ -82,6 +98,27 @@ export default {
     this.$emitter.off('edit-answer');
   },
   methods: {
+    addPatterns() {
+      this.$refs.uploader.click();
+    },
+    onFileChanged(e) {
+      console.log(e);
+      // this.patterns = e.target.files;
+      if (e.target.files.length == 0) return;
+      const formData = new FormData();
+      formData.append('file', e.target.files[0]);
+      const headers = { 'Content-Type': 'multipart/form-data' };
+      this.$http.post('/v1/answers/', formData, headers).then((res) => {
+        this.$refs.uploader.value = null;
+        this.$emitter.emit('alert', {
+          header: 'Готово',
+          color: 'info',
+          text: `Добавлено: ${res.data.result.success} новых шаблонов\nОбновлено: ${res.data.result.updated}\nОшибок в файлах: ${res.data.result.errored}`,
+        });
+        this.rowData = res.data;
+        this.gridApi.setRowData(this.rowData);
+      });
+    },
     filterPending() {
       this.filtering = !this.filtering;
       this.gridApi.onFilterChanged();
@@ -95,9 +132,6 @@ export default {
       }
       return true;
     },
-    deleteAnswers() {
-      console.log('todo');
-    },
     onGridReady(params) {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/answers/` }).then((res) => {
@@ -105,7 +139,6 @@ export default {
         this.gridApi.setRowData(this.rowData);
       });
       this.$emitter.on('edit-answer', (evt) => {
-        console.log(evt);
         const node = this.gridApi.getRowNode(evt.id);
         node.setExpanded(false);
         const index = this.rowData.findIndex((c) => c.id == evt.id);

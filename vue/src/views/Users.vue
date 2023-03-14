@@ -31,6 +31,7 @@ export default {
         {
           headerName: 'ID',
           field: 'id',
+          maxWidth: 150,
         },
         { field: 'userId', headerName: 'ID кампус' },
         { field: 'name', headerName: 'Имя' },

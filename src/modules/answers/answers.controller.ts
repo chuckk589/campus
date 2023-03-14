@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { Put } from '@nestjs/common/decorators';
+import { Put, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AnswersService } from './answers.service';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
@@ -12,10 +13,11 @@ import { UpdateAnswerDto } from './dto/update-answer.dto';
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 
-  // @Post()
-  // create(@Body() createAnswerDto: CreateAnswerDto) {
-  //   return this.answersService.create(createAnswerDto);
-  // }
+  @Post()
+  @UseInterceptors(FileInterceptor('file'))
+  async create(@UploadedFile() pattern: Express.Multer.File) {
+    return await this.answersService.create(pattern);
+  }
 
   @Get()
   findAll() {
