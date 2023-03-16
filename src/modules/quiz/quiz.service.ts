@@ -7,7 +7,6 @@ import { Code, CodeStatus } from '../mikroorm/entities/Code';
 import { AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
 import { User } from '../mikroorm/entities/User';
 import { CreateQuizDto } from './dto/create-quiz.dto';
-import axios from 'axios';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QuestionResult, QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
 import { HTMLCampusParser } from 'src/types/interfaces';
@@ -16,6 +15,8 @@ import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
 import { Config } from '../mikroorm/entities/Config';
 import { FinishQuizDto } from './dto/finish-quiz.dto';
 import { QuizResult } from '../mikroorm/entities/QuizResult';
+import fs from 'fs';
+import { AxiosRetryService } from '../axios-retry/axios-retry.service';
 
 @Injectable()
 export class QuizService {
@@ -25,6 +26,7 @@ export class QuizService {
     private readonly appConfigService: AppConfigService,
     @InjectPinoLogger('QuizService')
     private readonly logger: PinoLogger,
+    private readonly axiosRetry: AxiosRetryService,
   ) {}
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
@@ -83,51 +85,57 @@ export class QuizService {
       quiz.attemptId = quizAttemptId;
       await this.parseQuizData(cookie, quiz);
     }
-    if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
+    // if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
 
-    const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
-    const progress = quiz.attemptAnswers
-      .getItems()
-      .sort((a, b) => a.nativeId - b.nativeId)
-      .map((item) => item.answered);
-    if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
-    if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED', progress: progress };
-    if (attemptAnswer.answer.jsonAnswer) {
-      attemptAnswer.answered = true;
-      const delay = (await this.em.findOne(Config, { name: 'QUESTION_TIME' })).value.split('-');
-      await this.em.persistAndFlush(quiz);
-      return {
-        delay: Math.floor(Math.random() * (+delay[1] - +delay[0]) + +delay[0]),
-        answer: attemptAnswer.answer.jsonAnswer,
-        type: attemptAnswer.answer.question_type,
-        progress: progress,
-      };
-    } else {
-      return { status: HttpStatus.NO_CONTENT, progress: progress, error: 'NOANSWER' };
-    }
+    // const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
+    // const progress = quiz.attemptAnswers
+    //   .getItems()
+    //   .sort((a, b) => a.nativeId - b.nativeId)
+    //   .map((item) => item.answered);
+    // if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
+    // if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED', progress: progress };
+    // if (attemptAnswer.answer.jsonAnswer) {
+    //   attemptAnswer.answered = true;
+    //   const delay = (await this.em.findOne(Config, { name: 'QUESTION_TIME' })).value.split('-');
+    //   await this.em.persistAndFlush(quiz);
+    //   return {
+    //     delay: Math.floor(Math.random() * (+delay[1] - +delay[0]) + +delay[0]),
+    //     answer: attemptAnswer.answer.jsonAnswer,
+    //     type: attemptAnswer.answer.question_type,
+    //     progress: progress,
+    //   };
+    // } else {
+    //   return { status: HttpStatus.NO_CONTENT, progress: progress, error: 'NOANSWER' };
+    // }
   }
 
   async parseQuizData(cookie: string, quiz: QuizAttempt) {
-    const quizPage = await axios.get(`https://campus.fa.ru/mod/quiz/attempt.php?attempt=${quiz.attemptId}&cmid=${quiz.cmid}`, {
+    const quizPage = await this.axiosRetry.request({
+      method: 'GET',
+      url: `https://campus.fa.ru/mod/quiz/attempt.php?attempt=${quiz.attemptId}&cmid=${quiz.cmid}`,
       headers: { Cookie: cookie },
     });
     const dom = new JSDOM(quizPage.data);
     const questions = dom.window.document.querySelectorAll('.qn_buttons a');
     for (const question of questions) {
       const url = question.getAttribute('href');
-      const page = url == '#' ? quizPage : await axios.get(url, { headers: { Cookie: cookie } });
+      const page = url == '#' ? quizPage : await this.axiosRetry.request({ method: 'GET', url: url, headers: { Cookie: cookie } });
       const questionPage = new JSDOM(page.data);
       const questionData = HTMLCampusParser.get_question_type(questionPage.window.document as any);
+      const form = questionPage.window.document.querySelector('.formulation.clearfix');
       let existingAnswer = await this.em.findOne(QuizAnswer, { question_hash: questionData.question_idhash });
-      if (!existingAnswer) {
-        existingAnswer = this.em.create(QuizAnswer, {
-          question_hash: questionData.question_idhash,
-          question_type: questionData.resultype,
-          html: questionPage.window.document.querySelector('.formulation.clearfix').innerHTML,
-        });
-      } else if (existingAnswer.question_type == -1) {
-        //update questions loaded from archive
-        existingAnswer.question_type = questionData.resultype;
+      if (!existingAnswer || existingAnswer.question_type == -1) {
+        await this.loadPictures(cookie, form);
+        if (!existingAnswer) {
+          existingAnswer = this.em.create(QuizAnswer, {
+            question_hash: questionData.question_idhash,
+            question_type: questionData.resultype,
+            html: form.innerHTML,
+          });
+        } else if (existingAnswer.question_type == -1) {
+          existingAnswer.question_type = questionData.resultype;
+          existingAnswer.html = form.innerHTML;
+        }
       }
       quiz.attemptAnswers.add(
         this.em.create(QuizAttemptAnswer, {
@@ -140,5 +148,34 @@ export class QuizService {
       quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
     }
     await wrap(quiz).init();
+  }
+  async loadPictures(cookie: string, quizForm: Element) {
+    const imgPaths = quizForm.querySelectorAll('img[src^="https://campus.fa.ru/pluginfile.php"');
+    for (const img of imgPaths) {
+      const imgPath = img.getAttribute('src');
+      const paths = imgPath.split('/');
+      const imgName = paths[paths.length - 2] + paths[paths.length - 1];
+      const filePath = `./dist/public/files/${imgName}`;
+      img.setAttribute('src', `/files/${imgName}`);
+      if (fs.existsSync(filePath)) {
+        this.logger.info(`File ${imgName} already exists`);
+        continue;
+      }
+      await this.axiosRetry
+        .request({
+          method: 'GET',
+          url: imgPath,
+          headers: { Cookie: cookie },
+          responseType: 'stream',
+        })
+        .then((response) => {
+          if (paths.length > 3) {
+            response.data.pipe(fs.createWriteStream(`./dist/public/files/${imgName}`));
+          }
+        })
+        .catch((err) => {
+          this.logger.error(err);
+        });
+    }
   }
 }

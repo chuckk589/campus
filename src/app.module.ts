@@ -15,6 +15,7 @@ import { CodeModule } from './modules/code/code.module';
 import { AnswersModule } from './modules/answers/answers.module';
 import { AttemptModule } from './modules/attempt/attempt.module';
 import { ResultsModule } from './modules/results/results.module';
+import { AxiosRetryModule } from './modules/axios-retry/axios-retry.module';
 import ORMOptionsProvider from 'src/configs/mikro-orm.config';
 
 @Module({
@@ -35,7 +36,8 @@ import ORMOptionsProvider from 'src/configs/mikro-orm.config';
         level: 'silent',
       },
     }),
-    ServeStaticModule.forRoot({ rootPath: join(__dirname, './', 'public/') }),
+    // ServeStaticModule.forRoot({ rootPath: join(__dirname, './', 'public/') }),
+    ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', '/dist/public/') }),
     UserModule,
     AuthModule,
     StatusModule,
@@ -44,6 +46,7 @@ import ORMOptionsProvider from 'src/configs/mikro-orm.config';
     AnswersModule,
     AttemptModule,
     ResultsModule,
+    AxiosRetryModule,
   ],
   controllers: [],
   providers: [],

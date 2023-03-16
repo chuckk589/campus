@@ -2,20 +2,7 @@
   <v-app>
     <v-app-bar app>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <!-- <v-responsive class="ml-auto mr-5" max-width="250">
-        <v-text-field
-          density="compact"
-          variant="underlined"
-          type="text"
-          label="Поиск"
-          v-model="searchQuery"
-          single-line
-          ref="searchInput"
-          hide-details
-          append-icon="mdi-magnify"
-          @click:append="search"
-        ></v-text-field>
-      </v-responsive> -->
+
       <div class="d-flex justify-center">
         <v-btn @click="search">Поиск</v-btn>
       </div>
