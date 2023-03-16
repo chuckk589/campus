@@ -58,7 +58,10 @@ export class QuizService {
         code.status = CodeStatus.USED;
         await this.em.persistAndFlush([newQuizAttempt, code]);
         await wrap(newQuizAttempt).init();
-        const token = this.jwtService.sign({ id: newQuizAttempt.id }, { secret: this.appConfigService.get<string>('jwt_secret') });
+        const token = this.jwtService.sign(
+          { id: newQuizAttempt.id },
+          { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '45m' },
+        );
         return { token };
       }
     } else {

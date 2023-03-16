@@ -18,7 +18,7 @@ export default {
     save() {
       this.$http({
         method: 'PUT',
-        url: `${this.params.url}/${this.params.data.id}`,
+        url: `${this.params.url}${this.params.data.id}`,
         data: {
           json: HTMLCampusParser.bde_mainfunc(this.params.data.question_type),
         },
