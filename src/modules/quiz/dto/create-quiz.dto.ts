@@ -1,12 +1,15 @@
 import { IsNumberString, IsObject, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class CreateQuizDtoUser {
+export class CreateQuizDtoUser {
   @IsString()
   name!: string;
 
   @IsString()
   id!: string;
+
+  @IsString()
+  login!: string;
 }
 
 export class CreateQuizDto {

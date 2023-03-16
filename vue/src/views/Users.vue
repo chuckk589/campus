@@ -32,6 +32,7 @@ export default {
           field: 'id',
           maxWidth: 150,
         },
+        { field: 'login', headerName: 'Логин' },
         { field: 'userId', headerName: 'ID кампус' },
         { field: 'name', headerName: 'Имя' },
         {

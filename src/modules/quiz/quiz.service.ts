@@ -6,7 +6,7 @@ import { AppConfigService } from '../app-config/app-config.service';
 import { Code, CodeStatus } from '../mikroorm/entities/Code';
 import { AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
 import { User } from '../mikroorm/entities/User';
-import { CreateQuizDto } from './dto/create-quiz.dto';
+import { CreateQuizDto, CreateQuizDtoUser } from './dto/create-quiz.dto';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QuestionResult, QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
 import { HTMLCampusParser } from 'src/types/interfaces';
@@ -65,7 +65,7 @@ export class QuizService {
       throw new HttpException('Неверный код', 404);
     }
   }
-  async findOrCreateUser(user: { name: string; id: string }) {
+  async findOrCreateUser(user: CreateQuizDtoUser) {
     const existingUser = await this.em.findOne(User, { userId: user.id });
     if (existingUser) {
       return existingUser;
@@ -73,6 +73,7 @@ export class QuizService {
       const newUser = new User();
       newUser.name = user.name;
       newUser.userId = user.id;
+      newUser.login = user.login;
       await this.em.persistAndFlush(newUser);
       return newUser;
     }
@@ -85,28 +86,28 @@ export class QuizService {
       quiz.attemptId = quizAttemptId;
       await this.parseQuizData(cookie, quiz);
     }
-    // if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
+    if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
 
-    // const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
-    // const progress = quiz.attemptAnswers
-    //   .getItems()
-    //   .sort((a, b) => a.nativeId - b.nativeId)
-    //   .map((item) => item.answered);
-    // if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
-    // if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED', progress: progress };
-    // if (attemptAnswer.answer.jsonAnswer) {
-    //   attemptAnswer.answered = true;
-    //   const delay = (await this.em.findOne(Config, { name: 'QUESTION_TIME' })).value.split('-');
-    //   await this.em.persistAndFlush(quiz);
-    //   return {
-    //     delay: Math.floor(Math.random() * (+delay[1] - +delay[0]) + +delay[0]),
-    //     answer: attemptAnswer.answer.jsonAnswer,
-    //     type: attemptAnswer.answer.question_type,
-    //     progress: progress,
-    //   };
-    // } else {
-    //   return { status: HttpStatus.NO_CONTENT, progress: progress, error: 'NOANSWER' };
-    // }
+    const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
+    const progress = quiz.attemptAnswers
+      .getItems()
+      .sort((a, b) => a.nativeId - b.nativeId)
+      .map((item) => item.answered);
+    if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
+    if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED', progress: progress };
+    if (attemptAnswer.answer.jsonAnswer) {
+      attemptAnswer.answered = true;
+      const delay = (await this.em.findOne(Config, { name: 'QUESTION_TIME' })).value.split('-');
+      await this.em.persistAndFlush(quiz);
+      return {
+        delay: Math.floor(Math.random() * (+delay[1] - +delay[0]) + +delay[0]),
+        answer: attemptAnswer.answer.jsonAnswer,
+        type: attemptAnswer.answer.question_type,
+        progress: progress,
+      };
+    } else {
+      return { status: HttpStatus.NO_CONTENT, progress: progress, error: 'NOANSWER' };
+    }
   }
 
   async parseQuizData(cookie: string, quiz: QuizAttempt) {
@@ -154,12 +155,10 @@ export class QuizService {
     for (const img of imgPaths) {
       const imgPath = img.getAttribute('src');
       const paths = imgPath.split('/');
-      const imgName = paths[paths.length - 2] + paths[paths.length - 1];
-      const filePath = `./dist/public/files/${imgName}`;
+      const imgName = `${paths[paths.length - 2]}/${paths[paths.length - 1]}`;
       img.setAttribute('src', `/files/${imgName}`);
-      if (fs.existsSync(filePath)) {
-        this.logger.info(`File ${imgName} already exists`);
-        continue;
+      if (!fs.existsSync(`./dist/public/files/${paths[paths.length - 2]}`)) {
+        fs.mkdirSync(`./dist/public/files/${paths[paths.length - 2]}`, { recursive: true });
       }
       await this.axiosRetry
         .request({

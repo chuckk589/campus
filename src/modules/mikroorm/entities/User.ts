@@ -11,6 +11,10 @@ export class User extends CustomBaseEntity {
   @Property({ nullable: true })
   userId?: string;
 
+  @Unique()
+  @Property({ nullable: true })
+  login?: string;
+
   @Property({ nullable: true })
   name?: string;
 
