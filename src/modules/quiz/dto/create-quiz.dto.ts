@@ -1,4 +1,4 @@
-import { IsNumberString, IsObject, IsString, ValidateNested } from 'class-validator';
+import { IsNumberString, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateQuizDtoUser {
@@ -17,10 +17,12 @@ export class CreateQuizDto {
   code!: string;
 
   @IsString()
-  cmid!: string;
+  @IsOptional()
+  cmid?: string;
 
   @ValidateNested()
   @IsObject()
+  @IsOptional()
   @Type(() => CreateQuizDtoUser)
-  user!: CreateQuizDtoUser;
+  user?: CreateQuizDtoUser;
 }

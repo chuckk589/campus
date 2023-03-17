@@ -29,7 +29,7 @@ export class QuizAttempt extends CustomBaseEntity {
   @Property({ nullable: true })
   cmid?: string;
 
-  @ManyToOne({ entity: () => User })
+  @ManyToOne({ entity: () => User, nullable: true })
   user?: User;
 
   @OneToOne({ entity: () => Code })

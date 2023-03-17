@@ -8,7 +8,7 @@ export class RetrieveAttemptDto {
     this.attemptId = attempt.attemptId?.toString();
     this.questionAmount = attempt.questionAmount?.toString();
     this.cmid = attempt.cmid?.toString();
-    this.userId = attempt.user.id.toString();
+    this.userId = attempt.user?.id.toString();
     this.userName = attempt.user?.name;
     this.createdAt = attempt.createdAt;
     this.status = attempt.attemptStatus;

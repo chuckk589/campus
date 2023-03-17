@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Headers, UseGuards, Req, Query, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Headers, UseGuards, Req, Query, HttpException, Put } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 
@@ -6,6 +6,7 @@ import { AuthVersionGuard } from '../auth/guards/local-auth-version.guard';
 import { QuizAnswerRequest } from 'src/types/interfaces';
 import { JwtAuthChromeGuard } from '../auth/guards/jwt-auth-chrome.guard';
 import { FinishQuizDto } from './dto/finish-quiz.dto';
+import { UpdateQuizDto } from './dto/update-quiz.dto';
 
 @Controller({
   path: 'quiz',
@@ -19,6 +20,14 @@ export class QuizController {
   initNewQuiz(@Body() createQuizDto: CreateQuizDto) {
     return this.quizService.createQuiz(createQuizDto);
   }
+
+  @Put()
+  @UseGuards(AuthVersionGuard)
+  @UseGuards(JwtAuthChromeGuard)
+  updateQuiz(@Req() req: QuizAnswerRequest, @Body() updateQuizDto: UpdateQuizDto) {
+    return this.quizService.updateQuiz(+req.user.id, updateQuizDto);
+  }
+
   @Post('finish')
   @UseGuards(AuthVersionGuard)
   @UseGuards(JwtAuthChromeGuard)

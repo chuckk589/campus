@@ -34,7 +34,7 @@ export class AttemptService {
     return new RetrieveAttemptDto(attempt);
   }
   async findAll() {
-    const attempts = await this.em.find(QuizAttempt, {}, { populate: ['user', 'attemptAnswers.answer'] });
+    const attempts = await this.em.find(QuizAttempt, { user: { $ne: null } }, { populate: ['user', 'attemptAnswers.answer'] });
     return attempts.map((attempt) => new RetrieveAttemptDto(attempt));
   }
 

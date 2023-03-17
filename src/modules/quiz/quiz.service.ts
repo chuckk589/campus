@@ -17,6 +17,7 @@ import { FinishQuizDto } from './dto/finish-quiz.dto';
 import { QuizResult } from '../mikroorm/entities/QuizResult';
 import fs from 'fs';
 import { AxiosRetryService } from '../axios-retry/axios-retry.service';
+import { UpdateQuizDto } from './dto/update-quiz.dto';
 
 @Injectable()
 export class QuizService {
@@ -28,6 +29,14 @@ export class QuizService {
     private readonly logger: PinoLogger,
     private readonly axiosRetry: AxiosRetryService,
   ) {}
+
+  async updateQuiz(id: number, updateQuizDto: UpdateQuizDto) {
+    const quiz = await this.em.findOneOrFail(QuizAttempt, { id: +id });
+    const existingUser = await this.findOrCreateUser(updateQuizDto.user);
+    quiz.cmid = updateQuizDto.cmid;
+    quiz.user = existingUser;
+    return await this.em.persistAndFlush(quiz);
+  }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
     if (quiz.attemptStatus == AttemptStatus.FINISHED) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
@@ -69,6 +78,7 @@ export class QuizService {
     }
   }
   async findOrCreateUser(user: CreateQuizDtoUser) {
+    if (!user) return null;
     const existingUser = await this.em.findOne(User, { userId: user.id });
     if (existingUser) {
       return existingUser;
@@ -92,24 +102,25 @@ export class QuizService {
     if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
 
     const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
-    const progress = quiz.attemptAnswers
-      .getItems()
-      .sort((a, b) => a.nativeId - b.nativeId)
-      .map((item) => item.answered);
+    // const progress = quiz.attemptAnswers
+    //   .getItems()
+    //   .sort((a, b) => a.nativeId - b.nativeId)
+    //   .map((item) => item.answered);
     if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
-    if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED', progress: progress };
+    if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED' };
     if (attemptAnswer.answer.jsonAnswer) {
       attemptAnswer.answered = true;
+      const finished = quiz.attemptAnswers.getItems().every((item) => item.answered);
       const delay = (await this.em.findOne(Config, { name: 'QUESTION_TIME' })).value.split('-');
+      finished && (quiz.attemptStatus = AttemptStatus.FINISHED);
       await this.em.persistAndFlush(quiz);
       return {
         delay: Math.floor(Math.random() * (+delay[1] - +delay[0]) + +delay[0]),
         answer: attemptAnswer.answer.jsonAnswer,
         type: attemptAnswer.answer.question_type,
-        progress: progress,
       };
     } else {
-      return { status: HttpStatus.NO_CONTENT, progress: progress, error: 'NOANSWER' };
+      return { status: HttpStatus.NO_CONTENT, error: 'NOANSWER' };
     }
   }
 
