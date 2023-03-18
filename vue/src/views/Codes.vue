@@ -31,6 +31,7 @@
       rowSelection="multiple"
       rowMultiSelectWithClick
       @grid-ready="onGridReady"
+      enableCellTextSelection
     >
     </AgGridVue>
   </div>

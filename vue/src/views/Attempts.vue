@@ -15,6 +15,7 @@
     masterDetail
     detailRowAutoHeight
     :detailCellRendererParams="detailCellRendererParams"
+    enableCellTextSelection
   >
   </AgGridVue>
 </template>
@@ -74,6 +75,7 @@ export default {
       },
       detailCellRendererParams: {
         detailGridOptions: {
+          enableCellTextSelection: true,
           suppressCellFocus: true,
           detailCellRenderer: 'AnswerCell',
           detailCellRendererParams: {
