@@ -17,13 +17,13 @@ export enum AttemptStatus {
 export class QuizResult extends CustomBaseEntity {
   constructor(summary: summaryData) {
     super();
-    this.startedAt = summary['Тест начат'];
-    this.finishedAt = summary['Завершен'];
-    this.status = summary['Состояние'];
-    this.timeElapsed = summary['Прошло времени'];
-    this.points = summary['Баллы'];
-    this.mark = summary['Оценка'];
-    this.feedback = summary['Отзыв'];
+    this.startedAt = summary['Тест начат'] || summary['Started on'];
+    this.finishedAt = summary['Завершен'] || summary['Completed on'];
+    this.status = summary['Состояние'] || summary['State'];
+    this.timeElapsed = summary['Прошло времени'] || summary['Time taken'];
+    this.points = summary['Баллы'] || summary['Marks'];
+    this.mark = summary['Оценка'] || summary['Grade'];
+    this.feedback = summary['Отзыв'] || summary['Feedback'];
   }
   @PrimaryKey()
   id!: number;

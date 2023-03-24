@@ -4,7 +4,7 @@ export class RetrieveResultDto {
   constructor(result: QuizResult) {
     this.id = result.id.toString();
     this.attemptId = result.attempt.attemptId;
-    this.userName = result.attempt.user.name;
+    this.userName = result.attempt.user?.name;
     this.startedAt = result.startedAt;
     this.finishedAt = result.finishedAt;
     this.status = result.status;

@@ -39,7 +39,7 @@ export class QuizService {
   }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
-    if (quiz.attemptStatus == AttemptStatus.FINISHED) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
+    if (quiz.result) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
     const answers = quiz.attemptAnswers.getItems();
     answers.forEach((answer) => {
       if (finishQuizDto.incorrectQuestions.find((item) => +item - 1 == answer.nativeId)) {
