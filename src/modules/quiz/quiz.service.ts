@@ -107,7 +107,7 @@ export class QuizService {
     //   .sort((a, b) => a.nativeId - b.nativeId)
     //   .map((item) => item.answered);
     if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
-    if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED' };
+    // if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED' };
     if (attemptAnswer.answer.jsonAnswer) {
       attemptAnswer.answered = true;
       const finished = quiz.attemptAnswers.getItems().every((item) => item.answered);

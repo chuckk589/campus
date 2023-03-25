@@ -88,14 +88,13 @@ export default {
               field: 'nativeId',
               cellRenderer: 'agGroupCellRenderer',
               headerName: 'ID',
-              maxWidth: 150,
               valueFormatter: (params) => +params.value + 1,
             },
-            {
-              field: 'answered',
-              headerName: 'Получен ответ',
-              valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
-            },
+            // {
+            //   field: 'answered',
+            //   headerName: 'Получен ответ',
+            //   valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
+            // },
             { field: 'jsonAnswer', headerName: 'JSON' },
             {
               field: 'result',
@@ -104,12 +103,12 @@ export default {
                 this.$ctable.que_result.find((c) => c.value == params.value)
                   ?.title,
             },
-            {
-              field: 'action',
-              headerName: '',
-              maxWidth: 70,
-              cellRenderer: 'AttemptAnswerCell',
-            },
+            // {
+            //   field: 'action',
+            //   headerName: '',
+            //   maxWidth: 70,
+            //   cellRenderer: 'AttemptAnswerCell',
+            // },
           ],
           defaultColDef: {
             sortable: true,
