@@ -166,7 +166,6 @@ export class QuizService {
   }
   async loadPictures(cookie: string, quizForm: Element) {
     const imgPaths = quizForm.querySelectorAll('img[src^="https://campus.fa.ru/pluginfile.php"');
-    this.logger.info(imgPaths);
     for (const img of imgPaths) {
       const imgPath = img.getAttribute('src');
       const paths = imgPath.split('/');
@@ -183,7 +182,6 @@ export class QuizService {
           responseType: 'stream',
         })
         .then((response) => {
-          this.logger.info(response);
           if (paths.length > 3) {
             response.data.pipe(fs.createWriteStream(`./dist/public/files/${imgName}`));
           }
