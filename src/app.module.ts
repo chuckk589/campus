@@ -24,6 +24,7 @@ import ORMOptionsProvider from 'src/configs/mikro-orm.config';
     MikroOrmModule.forRoot(ORMOptionsProvider),
     LoggerModule.forRoot({
       pinoHttp: {
+        autoLogging: false,
         quietReqLogger: true,
         transport: {
           target: 'pino-pretty',
@@ -32,7 +33,7 @@ import ORMOptionsProvider from 'src/configs/mikro-orm.config';
           },
         },
 
-        level: 'silent',
+        level: 'info',
       },
     }),
     // ServeStaticModule.forRoot({ rootPath: join(__dirname, './', 'public/') }),
