@@ -1,5 +1,11 @@
 version: '3.8'
 services:
+  adminer:
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: mysqldb
+    ports:
+      - 8080:8080
   mysqldb:
     image: mysql:5.7
     restart: unless-stopped
