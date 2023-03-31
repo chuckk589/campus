@@ -35,6 +35,7 @@ export class QuizService {
     const existingUser = await this.findOrCreateUser(updateQuizDto.user);
     quiz.cmid = updateQuizDto.cmid;
     quiz.user = existingUser;
+    quiz.path = updateQuizDto.path;
     return await this.em.persistAndFlush(quiz);
   }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
@@ -63,6 +64,7 @@ export class QuizService {
           code: code,
           user: existingUser,
           cmid: createQuizDto.cmid,
+          path: createQuizDto.path,
         });
         code.status = CodeStatus.USED;
         await this.em.persistAndFlush([newQuizAttempt, code]);

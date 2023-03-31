@@ -29,6 +29,9 @@ export class QuizAttempt extends CustomBaseEntity {
   @Property({ nullable: true })
   cmid?: string;
 
+  @Property({ nullable: true, type: 'text' })
+  path?: string;
+
   @ManyToOne({ entity: () => User, nullable: true })
   user?: User;
 

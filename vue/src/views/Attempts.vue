@@ -25,6 +25,8 @@ import { AgGridVue } from 'ag-grid-vue3';
 import AttemptCell from '@/components/cellRenderers/AttemptCell.vue';
 import AttemptAnswerCell from '@/components/cellRenderers/AttemptAnswerCell.vue';
 import AnswerCell from '@/components/cellRenderers/AnswerCell.vue';
+import PathCell from '@/components/cellRenderers/PathCell.vue';
+
 export default {
   name: 'AttemptsView',
   components: {
@@ -35,6 +37,8 @@ export default {
     AttemptAnswerCell,
     // eslint-disable-next-line vue/no-unused-components
     AnswerCell,
+    // eslint-disable-next-line vue/no-unused-components
+    PathCell,
   },
   data() {
     return {
@@ -46,6 +50,7 @@ export default {
         },
         { field: 'userName', headerName: 'Имя' },
         { field: 'questionAmount', headerName: 'Кол-во вопросов' },
+        { field: 'path', headerName: 'Категории', cellRenderer: 'PathCell' },
         { field: 'cmid', headerName: 'CMID' },
         {
           field: 'status',

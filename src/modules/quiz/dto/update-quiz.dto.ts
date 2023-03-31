@@ -6,6 +6,9 @@ export class UpdateQuizDto {
   @IsString()
   cmid?: string;
 
+  @IsString()
+  path?: string;
+
   @ValidateNested()
   @IsObject()
   @Type(() => CreateQuizDtoUser)

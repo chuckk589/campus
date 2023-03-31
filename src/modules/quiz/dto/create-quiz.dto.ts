@@ -20,6 +20,10 @@ export class CreateQuizDto {
   @IsOptional()
   cmid?: string;
 
+  @IsString()
+  @IsOptional()
+  path?: string;
+
   @ValidateNested()
   @IsObject()
   @IsOptional()
