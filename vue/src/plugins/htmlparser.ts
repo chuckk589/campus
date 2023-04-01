@@ -34,14 +34,19 @@ export class HTMLCampusParser {
       return JSON.stringify(jsondata) || '';
     } else if (type == 1) {
       const jsondata = [];
-
       const listtext = document.querySelectorAll('table.answer td.text');
       const listselect = document.querySelectorAll(
         'table.answer select',
       ) as unknown as HTMLSelectElement[];
       if (listtext.length > 0 && listtext.length == listselect.length) {
         for (let i = 0; i < listtext.length; i++) {
-          const thistext = listtext[i].textContent?.trim().toLowerCase();
+          let thistext = listtext[i].textContent?.trim().toLowerCase();
+          if (thistext?.length == 0) {
+            const elemimg = listtext[i].parentNode?.querySelector('img');
+            if (elemimg) {
+              thistext = this.bde_fromsrc(elemimg.src);
+            }
+          }
           const thisvalue = listselect[i].options[
             listselect[i].selectedIndex
           ].text
