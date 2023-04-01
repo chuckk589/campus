@@ -96,6 +96,7 @@ export class QuizService {
 
   async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, quizAttemptId: string) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +quizId }, { populate: ['attemptAnswers.answer'] });
+    if (!quiz.cmid || !quiz.user) return { status: HttpStatus.BAD_REQUEST, error: 'NOTINITIATED' };
     if (quiz.attemptAnswers.length == 0) {
       //initial call, need to parse quiz data
       quiz.attemptId = quizAttemptId;
