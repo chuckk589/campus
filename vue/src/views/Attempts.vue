@@ -120,9 +120,9 @@ export default {
             filter: true,
             flex: 1,
           },
-          getDetailRowData: (params) => {
-            params.successCallback(params.data.children);
-          },
+          // getDetailRowData: (params) => {
+          //   params.successCallback(params.data.children);
+          // },
         },
         getDetailRowData: (params) => {
           params.successCallback(params.data.answers);
