@@ -41,7 +41,7 @@ export class CodeService {
   }
 
   async findAll(): Promise<RetrieveCodeDto[]> {
-    const codes = await this.em.find(Code, {});
+    const codes = await this.em.find(Code, {}, { populate: ['attempt.user'] });
     return codes.map((code) => new RetrieveCodeDto(code));
   }
 }

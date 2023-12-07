@@ -7,9 +7,11 @@ export class RetrieveCodeDto {
     this.value = code.value;
     this.status = code.status;
     this.createdAt = code.createdAt;
+    this.usedBy = code.attempt?.user ? `${code.attempt.user.login} (${code.attempt.user.name})` : '';
   }
   id: string;
   value: string;
   status: string;
   createdAt: Date;
+  usedBy: string;
 }

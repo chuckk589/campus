@@ -144,7 +144,7 @@ export default {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/attempt/` }).then((res) => {
         this.rowData = res.data;
-        this.gridApi.setRowData(this.rowData);
+        this.gridApi.setRowData(res.data);
       });
       this.$emitter.on('edit-attempt', (evt) => {
         const index = this.rowData.findIndex((c) => c.id == evt.id);

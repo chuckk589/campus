@@ -66,6 +66,10 @@ export default {
               ?.title,
         },
         {
+          field: 'usedBy',
+          headerName: 'Кем',
+        },
+        {
           field: 'createdAt',
           headerName: 'Дата создания',
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
