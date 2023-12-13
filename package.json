@@ -27,6 +27,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "schema:initial": "mikro-orm schema:create --run",
     "schema:seeder": "mikro-orm seeder:run --class=ConfigSeeder",
+    "schema:clean": "yarn mikro-orm schema:fresh --run&&mikro-orm seeder:run",
     "schema:update": "yarn mikro-orm schema:update --run"
   },
   "dependencies": {

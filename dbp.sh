@@ -7,5 +7,6 @@ docker compose up -d --build
 echo "--------------------------------------campus container created--------------------------------------"
 docker system prune --all -f
 echo "--------------------------------------prune done--------------------------------------"
-docker exec -it campus-mysqldb-1 mysql -uroot -pssqwec -e "ALTER USER 'root'@'%' IDENTIFIED BY '$DB_PASSWORD';"
+# docker exec -it campus-mysqldb-1 mysql -uroot -pssqwec -e "ALTER USER 'root'@'%' IDENTIFIED BY '$DB_PASSWORD';"
+docker exec -it campus-mysqldb-1 mysql -uroot -pssqwec -e "set password for 'root'@'%'= password('$DB_PASSWORD');"
 echo "--------------------------------------password changed--------------------------------------"

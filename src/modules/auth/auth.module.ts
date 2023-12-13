@@ -8,6 +8,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { AuthController } from './auth.controller';
 import { JwtChromeStrategy } from './strategies/jwt-chrome.strategy';
 import { LocalVersionStrategy } from './strategies/local-version.strategy';
+import { UserStatusStrategy } from './strategies/user-status.strategy';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { LocalVersionStrategy } from './strategies/local-version.strategy';
       }),
     }),
   ],
-  providers: [LocalStrategy, JwtStrategy, JwtChromeStrategy, LocalVersionStrategy, AuthService],
+  providers: [LocalStrategy, JwtStrategy, JwtChromeStrategy, LocalVersionStrategy, AuthService, UserStatusStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

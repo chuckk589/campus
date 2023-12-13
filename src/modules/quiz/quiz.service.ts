@@ -71,7 +71,7 @@ export class QuizService {
         await wrap(newQuizAttempt).init();
         const token = this.jwtService.sign(
           { id: newQuizAttempt.id },
-          { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '45m' },
+          { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '6h' },
         );
         return { token };
       }

@@ -1,6 +1,19 @@
-import { BeforeCreate, BeforeUpdate, Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import {
+  BeforeCreate,
+  BeforeUpdate,
+  Collection,
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/core';
 import { QuizAttempt } from './QuizAttempt';
 import { CustomBaseEntity } from './CustomBaseEntity';
+import { UserRestriction } from './UserRestriction';
 
 @Entity()
 export class User extends CustomBaseEntity {
@@ -20,4 +33,7 @@ export class User extends CustomBaseEntity {
 
   @OneToMany(() => QuizAttempt, (attempt) => attempt.user)
   attempts = new Collection<QuizAttempt>(this);
+
+  @OneToOne(() => UserRestriction, (restriction) => restriction.user, { owner: true, nullable: true, default: null })
+  restriction?: UserRestriction;
 }

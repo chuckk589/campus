@@ -32,6 +32,7 @@
       rowMultiSelectWithClick
       @grid-ready="onGridReady"
       enableCellTextSelection
+      :getRowStyle="getRowStyle"
     >
     </AgGridVue>
   </div>
@@ -91,6 +92,13 @@ export default {
       },
       getRowId: function (params) {
         return params.data.id;
+      },
+      getRowStyle: (params) => {
+        if (params.node.data.usedByBanned) {
+          return { background: '#FF8A80' };
+        } else {
+          return { background: '#FFFFFF' };
+        }
       },
       rowData: [],
     };
