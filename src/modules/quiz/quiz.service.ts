@@ -32,6 +32,7 @@ export class QuizService {
 
   async updateQuiz(id: number, updateQuizDto: UpdateQuizDto) {
     const quiz = await this.em.findOneOrFail(QuizAttempt, { id: +id });
+    if (quiz.user) return; //already updated
     const existingUser = await this.findOrCreateUser(updateQuizDto.user);
     quiz.cmid = updateQuizDto.cmid;
     quiz.user = existingUser;
