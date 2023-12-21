@@ -22,6 +22,12 @@ export class QuizController {
     return this.quizService.createQuiz(createQuizDto);
   }
 
+  @Get()
+  @UseGuards(AuthVersionGuard)
+  versionCheck() {
+    return { status: 'ok' };
+  }
+
   @Put()
   @UseGuards(AuthVersionGuard, JwtAuthChromeGuard, UserStatusGuard)
   updateQuiz(@Req() req: QuizAnswerRequest, @Body() updateQuizDto: UpdateQuizDto) {

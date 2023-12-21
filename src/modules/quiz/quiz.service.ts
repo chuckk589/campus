@@ -32,12 +32,17 @@ export class QuizService {
 
   async updateQuiz(id: number, updateQuizDto: UpdateQuizDto) {
     const quiz = await this.em.findOneOrFail(QuizAttempt, { id: +id });
-    if (quiz.user) return; //already updated
+    if (quiz.user) return {}; //already updated
     const existingUser = await this.findOrCreateUser(updateQuizDto.user);
     quiz.cmid = updateQuizDto.cmid;
     quiz.user = existingUser;
     quiz.path = updateQuizDto.path;
-    return await this.em.persistAndFlush(quiz);
+    await this.em.persistAndFlush(quiz);
+    const token = this.jwtService.sign(
+      { id: quiz.id, cmid: quiz.cmid, path: quiz.path.split(';').pop() },
+      { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '6h' },
+    );
+    return { token };
   }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
