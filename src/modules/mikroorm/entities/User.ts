@@ -33,7 +33,4 @@ export class User extends CustomBaseEntity {
 
   @OneToMany(() => QuizAttempt, (attempt) => attempt.user)
   attempts = new Collection<QuizAttempt>(this);
-
-  @OneToOne(() => UserRestriction, (restriction) => restriction.user, { owner: true, nullable: true, default: null })
-  restriction?: UserRestriction;
 }

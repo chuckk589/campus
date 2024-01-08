@@ -11,7 +11,7 @@ services:
     image: mysql:5.7
     restart: unless-stopped
     env_file: ./.env
-    command: [ "mysqld", "--default-authentication-plugin=mysql_native_password" ]
+    command: [ "mysqld", "--default-authentication-plugin=mysql_native_password"]
     environment:
       - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=$DB_PASSWORD

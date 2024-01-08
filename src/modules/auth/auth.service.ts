@@ -6,6 +6,7 @@ import { compare } from 'bcrypt';
 import { Config } from '../mikroorm/entities/Config';
 import { User } from '../mikroorm/entities/User';
 import { QuizAttempt } from '../mikroorm/entities/QuizAttempt';
+import { UserRestriction } from '../mikroorm/entities/UserRestriction';
 
 @Injectable()
 export class AuthService {
@@ -18,8 +19,13 @@ export class AuthService {
   }
 
   async validateUserStatus(attemptId: number): Promise<any> {
-    const attempt = await this.em.findOne(QuizAttempt, { id: attemptId }, { populate: ['user.restriction'] });
-    if (attempt.user?.restriction) {
+    const restriction = await this.em
+      .getConnection()
+      .execute(
+        'SELECT * FROM user_restriction WHERE user_id = (SELECT user_id FROM user WHERE id = (SELECT user_id FROM quiz_attempt WHERE id =?))',
+        [attemptId],
+      );
+    if (restriction.length > 0) {
       return false;
     }
     return true;

@@ -7,9 +7,9 @@ export class UserRestriction extends CustomBaseEntity {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => User, (user) => user.restriction, { orphanRemoval: true })
-  user: User;
-
   @Property({ nullable: true })
   reason?: string;
+
+  @Property({ nullable: true })
+  userId?: string;
 }

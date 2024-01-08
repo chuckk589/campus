@@ -1,14 +1,15 @@
 import { User } from 'src/modules/mikroorm/entities/User';
+import { UserRestriction } from 'src/modules/mikroorm/entities/UserRestriction';
 
 export class RetrieveUserDto {
-  constructor(user: User) {
+  constructor(user: User, restriction?: UserRestriction) {
     this.id = user.id;
     this.userId = user.userId;
     this.login = user.login;
     this.name = user.name;
-    this.isBanned = !(user.restriction == null);
     this.createdAt = user.createdAt;
-    this.banReason = user.restriction?.reason;
+    this.isBanned = restriction ? true : false;
+    this.banReason = restriction ? restriction.reason : '';
   }
   id: number;
   userId: string;

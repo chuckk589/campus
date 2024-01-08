@@ -4,6 +4,7 @@ import { Config } from '../entities/Config';
 
 export class ConfigSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
+    em.getConnection().execute('SET FOREIGN_KEY_CHECKS=0;');
     em.create(Config, {
       name: 'ADMIN_PASSCODE',
       value: '$2a$12$DC3oYahZU5pZIFbFMhminuEnlSPXb4coN8AfEOkRpcOTpefSXSdAu', //1

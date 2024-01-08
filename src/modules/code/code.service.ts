@@ -5,6 +5,7 @@ import { CreateCodeDto } from './dto/create-code.dto';
 import crypto from 'crypto';
 import { RetrieveCodeDto } from './dto/retrieve-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
+import { UserRestriction } from '../mikroorm/entities/UserRestriction';
 
 @Injectable()
 export class CodeService {
@@ -40,8 +41,12 @@ export class CodeService {
     return newCodes.map((code) => new RetrieveCodeDto(code));
   }
 
-  async findAll(): Promise<RetrieveCodeDto[]> {
-    const codes = await this.em.find(Code, {}, { populate: ['attempt.user.restriction'] });
-    return codes.map((code) => new RetrieveCodeDto(code));
+  async findAll() {
+    const codes = await this.em.find(Code, {}, { populate: ['attempt.user'] });
+    const restrictions = await this.em.find(UserRestriction, {});
+    return codes.map((code) => {
+      const restriction = restrictions.find((restriction) => restriction.userId == code.attempt?.user?.userId);
+      return new RetrieveCodeDto(code, restriction);
+    });
   }
 }

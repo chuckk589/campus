@@ -21,6 +21,12 @@
 </template>
 
 <script>
+//  <!-- rowModelType="infinite"
+//   cacheBlockSize="100"
+//   cacheOverflowSize="2;"
+//   maxConcurrentDatasourceRequests="2"
+//   infiniteInitialRowCount="1"
+//   maxBlocksInCache="2" -->
 import { AgGridVue } from 'ag-grid-vue3';
 import AttemptCell from '@/components/cellRenderers/AttemptCell.vue';
 import AttemptAnswerCell from '@/components/cellRenderers/AttemptAnswerCell.vue';

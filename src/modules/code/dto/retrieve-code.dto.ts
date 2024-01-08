@@ -1,15 +1,16 @@
 import { IsNumberString } from 'class-validator';
 import { Code } from 'src/modules/mikroorm/entities/Code';
+import { UserRestriction } from 'src/modules/mikroorm/entities/UserRestriction';
 
 export class RetrieveCodeDto {
-  constructor(code: Code) {
+  constructor(code: Code, restriction?: UserRestriction) {
     this.id = code.id.toString();
     this.value = code.value;
     this.status = code.status;
     this.createdAt = code.createdAt;
     this.usedBy = code.attempt?.user ? `${code.attempt.user.login} (${code.attempt.user.name})` : '';
     this.usedByBanned = false;
-    if (code.attempt?.user?.restriction && code.attempt.createdAt > code.attempt.user.restriction.createdAt) {
+    if (restriction && code.attempt.createdAt > restriction.createdAt) {
       this.usedByBanned = true;
     }
   }
