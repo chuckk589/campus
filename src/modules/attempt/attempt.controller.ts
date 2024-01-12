@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AttemptService } from './attempt.service';
 import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
+import { IServerSideGetRowsRequest } from 'src/types/interfaces';
 
 @Controller({ version: '1', path: 'attempt' })
 @UseGuards(JwtAuthGuard)
@@ -21,10 +22,10 @@ export class AttemptController {
     return this.attemptService.findAll();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.attemptService.findOne(+id);
-  // }
+  @Post('/lazy')
+  lazyload(@Body() body: IServerSideGetRowsRequest) {
+    return this.attemptService.lazyload(body);
+  }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateAttemptDto: UpdateAttemptDto) {

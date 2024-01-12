@@ -1,4 +1,3 @@
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,9 +19,18 @@ export class UserController {
   // // findOne(@Param('id') id: string) {
   // //   return this.userService.findOne(+id);
   // // }
+  // @Get('/banned')
+  // findAllBanned() {
+  //   return this.userService.findAllBanned();
+  // }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
+  // @Put('/banned/:id')
+  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  //   return this.userService.updateBannedUser(+id, updateUserDto);
+  // }
+
+  // @Post('/banned/')
+  // banUser(@Body() updateUserDto: UpdateUserDto) {
+  //   return this.userService.banUser(updateUserDto);
+  // }
 }

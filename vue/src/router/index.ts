@@ -15,6 +15,11 @@ const router = createRouter({
           component: () => import('../views/Users.vue'),
         },
         {
+          path: 'banned',
+          name: 'banned',
+          component: () => import('../views/Banlist.vue'),
+        },
+        {
           path: 'codes',
           name: 'codes',
           component: () => import('../views/Codes.vue'),

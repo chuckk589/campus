@@ -6,9 +6,12 @@
     animateRows
     suppressCellFocus
     :get-row-id="getRowId"
-    :row-data="rowData"
     rowSelection="multiple"
     suppressRowClickSelection
+    rowModelType="serverSide"
+    :serverSideDatasource="serverSideDatasource"
+    serverSideStoreType="partial"
+    cacheBlockSize="30"
     pagination
     style="height: 100%"
     @grid-ready="onGridReady"
@@ -84,6 +87,7 @@ export default {
         flex: 1,
         filter: true,
       },
+      serverSideDatasource: null,
       detailCellRendererParams: {
         detailGridOptions: {
           enableCellTextSelection: true,
@@ -137,40 +141,60 @@ export default {
       getRowId: function (params) {
         return params.data.id;
       },
-      rowData: [],
     };
   },
   beforeUnmount() {
     this.$emitter.off('edit-attempt');
-    this.$emitter.off('edit-attempt-answer');
+    // this.$emitter.off('edit-attempt-answer');
     this.$emitter.off('edit-answer');
   },
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
-      this.$http({ method: 'GET', url: `/v1/attempt/` }).then((res) => {
-        this.rowData = res.data;
-        this.gridApi.setRowData(res.data);
-      });
+      // this.$http({ method: 'GET', url: `/v1/attempt/` }).then((res) => {
+      //   this.rowData = res.data;
+      //   this.gridApi.setRowData(res.data);
+      // });
+      this.serverSideDatasource = {
+        getRows: (params) => {
+          this.$http({
+            method: 'POST',
+            url: `/v1/attempt/lazy`,
+            data: params.request,
+          }).then((res) => {
+            params.successCallback(res.data.rows, res.data.lastRow);
+          });
+        },
+      };
       this.$emitter.on('edit-attempt', (evt) => {
-        const index = this.rowData.findIndex((c) => c.id == evt.id);
-        this.rowData[index] = evt;
-        this.gridApi.applyTransaction({ update: [evt] });
-        this.gridApi.refreshCells({ force: true });
+        // const index = this.rowData.findIndex((c) => c.id == evt.id);
+        // this.rowData[index] = evt;
+        // this.gridApi.applyTransaction({ update: [evt] });
+        // this.gridApi.refreshCells({ force: true });
+        const node = this.gridApi.getRowNode(evt.id);
+        node.setData(evt);
       });
-      this.$emitter.on('edit-attempt-answer', (evt) => {
-        const row = this.rowData.find((c) =>
-          c.answers.find((d) => d.id == evt.id),
-        );
-        row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
-        setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
-      });
+      // this.$emitter.on('edit-attempt-answer', (evt) => {
+      //   const row = this.rowData.find((c) =>
+      //     c.answers.find((d) => d.id == evt.id),
+      //   );
+      //   row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
+      //   setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
+      // });
       this.$emitter.on('edit-answer', (evt) => {
-        const row = this.rowData.find((c) =>
-          c.answers.find((d) => d.id == evt.id),
-        );
-        row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
-        setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
+        // const row = this.rowData.find((c) =>
+        //   c.answers.find((d) => d.id == evt.id),
+        // );
+        // row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
+        // setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
+        this.gridApi.forEachNode((n) => {
+          const rowindex = n.data.answers.findIndex((c) => c.id == evt.id);
+          if (rowindex != -1) {
+            n.data.answers[rowindex] = evt;
+            n.setData({ ...n.data });
+            this.gridApi.refreshCells({ force: true });
+          }
+        });
       });
     },
   },

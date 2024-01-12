@@ -32,6 +32,10 @@
     :get-row-id="getRowId"
     :row-data="rowData"
     animateRows
+    rowModelType="serverSide"
+    :serverSideDatasource="serverSideDatasource"
+    serverSideStoreType="partial"
+    cacheBlockSize="30"
     style="height: 100%"
     @grid-ready="onGridReady"
     suppressRowClickSelection
@@ -90,6 +94,7 @@ export default {
       getRowId: function (params) {
         return params.data.id;
       },
+      serverSideDatasource: null,
       rowData: [],
       filtering: true,
     };
@@ -134,17 +139,33 @@ export default {
     },
     onGridReady(params) {
       this.gridApi = params.api;
-      this.$http({ method: 'GET', url: `/v1/answers/` }).then((res) => {
-        this.rowData = res.data;
-        this.gridApi.setRowData(this.rowData);
-      });
+      // params.api.setGridOption(
+      //   'serverSideDatasource',
+      //   this.serverSideDatasource,
+      // );
+      this.serverSideDatasource = {
+        getRows: (params) => {
+          this.$http({
+            method: 'POST',
+            url: `/v1/answers/lazy`,
+            data: params.request,
+          }).then((res) => {
+            params.successCallback(res.data.rows, res.data.lastRow);
+          });
+        },
+      };
+      // this.$http({ method: 'GET', url: `/v1/answers/` }).then((res) => {
+      //   this.rowData = res.data;
+      //   this.gridApi.setRowData(this.rowData);
+      // });
       this.$emitter.on('edit-answer', (evt) => {
         const node = this.gridApi.getRowNode(evt.id);
         node.setExpanded(false);
-        const index = this.rowData.findIndex((c) => c.id == evt.id);
-        this.rowData[index] = evt;
-        this.gridApi.applyTransaction({ update: [evt] });
-        this.gridApi.refreshCells({ force: true });
+        node.setData(evt);
+        // const index = this.rowData.findIndex((c) => c.id == evt.id);
+        // this.rowData[index] = evt;
+        // this.gridApi.applyTransaction({ update: [evt] });
+        // this.gridApi.refreshCells({ force: true });
       });
     },
   },

@@ -11,5 +11,11 @@ export class UserRestriction extends CustomBaseEntity {
   reason?: string;
 
   @Property({ nullable: true })
+  login?: string;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @Property({ nullable: true })
   userId?: string;
 }

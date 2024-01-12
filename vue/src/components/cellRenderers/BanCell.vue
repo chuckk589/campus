@@ -4,30 +4,30 @@
       density="compact"
       class="ma-2"
       variant="text"
-      icon="mdi-account-cancel"
-      @click="banUser"
+      icon="mdi-pencil"
+      @click="edit"
     ></v-btn>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'UserCell',
+  name: 'BanCell',
   data() {
     return {};
   },
   methods: {
-    banUser() {
+    edit() {
       this.$emitter.emit('openModal', {
-        url: `/user/benned/${this.params.data.id}`,
-        method: 'POST',
-        header: this.params.data.name,
-        eventName: 'edit-user',
+        url: `/restriction/${this.params.data.id}`,
+        method: 'PUT',
+        header: this.params.data.userId,
+        eventName: 'edit-restriction',
         fields: [
           {
-            key: 'banReason',
+            key: 'reason',
             label: 'Комментарий',
-            value: this.params.data.banReason,
+            value: this.params.data.reason,
           },
         ],
       });

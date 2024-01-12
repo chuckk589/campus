@@ -51,6 +51,13 @@
 
           <v-list-item-title>Конфиги</v-list-item-title>
         </v-list-item>
+        <v-list-item to="/banned" value="7" active-color="#1867C0">
+          <template v-slot:prepend>
+            <v-icon class="mr-5" icon="mdi-account-cancel"></v-icon>
+          </template>
+
+          <v-list-item-title>Блокировки</v-list-item-title>
+        </v-list-item>
       </v-list>
       <template v-slot:append>
         <div class="pa-2">

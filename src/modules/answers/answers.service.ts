@@ -5,10 +5,24 @@ import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
 import { RetrieveAnswerDto } from './dto/retrieve-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import JSZip from 'jszip';
+import { IServerSideGetRowsRequest } from 'src/types/interfaces';
 
 @Injectable()
 export class AnswersService {
   constructor(private readonly em: EntityManager) {}
+
+  async lazyload(body: IServerSideGetRowsRequest) {
+    const answers = await this.em.find(
+      QuizAnswer,
+      {},
+      { limit: body.endRow - body.startRow, offset: body.startRow, orderBy: body.sortModel.map((sort) => ({ [sort.colId]: sort.sort })) },
+    );
+    const answersCount = await this.em.count(QuizAnswer, {});
+    return {
+      rows: answers.map((answer) => new RetrieveAnswerDto(answer)),
+      lastRow: answersCount,
+    };
+  }
   async create(file: Express.Multer.File) {
     const zip = new JSZip();
     const zipFile = await zip.loadAsync(file.buffer);

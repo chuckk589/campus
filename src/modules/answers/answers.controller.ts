@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AnswersService } from './answers.service';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
+import { IServerSideGetRowsRequest } from 'src/types/interfaces';
 
 @Controller({
   version: '1',
@@ -23,19 +24,13 @@ export class AnswersController {
   findAll() {
     return this.answersService.findAll();
   }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.answersService.findOne(+id);
-  // }
+  @Post('/lazy')
+  lazyload(@Body() body: IServerSideGetRowsRequest) {
+    return this.answersService.lazyload(body);
+  }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateAnswerDto: UpdateAnswerDto) {
     return this.answersService.update(+id, updateAnswerDto);
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.answersService.remove(+id);
-  // }
 }

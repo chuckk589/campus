@@ -19,13 +19,11 @@
 
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
-import UserCell from '@/components/cellRenderers/UserCell.vue';
 export default {
   name: 'UsersView',
   components: {
     AgGridVue,
     // eslint-disable-next-line vue/no-unused-components
-    UserCell,
   },
   data() {
     return {
@@ -50,14 +48,6 @@ export default {
           sortable: true,
           valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
         },
-        {
-          field: 'action',
-          headerName: '',
-          filter: false,
-          sortable: false,
-          maxWidth: 70,
-          cellRenderer: 'UserCell',
-        },
       ],
       defaultCsvExportParams: null,
       gridApi: null,
@@ -73,7 +63,7 @@ export default {
     };
   },
   beforeUnmount() {
-    this.$emitter.off('edit-user');
+    // this.$emitter.off('edit-user');
   },
   methods: {
     onGridReady(params) {
@@ -82,10 +72,10 @@ export default {
         this.rowData = res.data;
         this.gridApi.setRowData(this.rowData);
       });
-      this.$emitter.on('edit-user', (evt) => {
-        const rowNode = this.gridApi.getRowNode(evt.id);
-        rowNode.setData(evt);
-      });
+      // this.$emitter.on('edit-user', (evt) => {
+      //   const rowNode = this.gridApi.getRowNode(evt.id);
+      //   rowNode.setData(evt);
+      // });
     },
   },
 };

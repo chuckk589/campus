@@ -7,6 +7,42 @@ export interface QuizAnswerRequest extends Request {
 }
 export type RequestWithVersion = Request & { headers: { 'x-version': string } } & QuizAnswerRequest;
 
+export interface IServerSideGetRowsRequest {
+  // First row requested or undefined for all rows.
+  startRow: number | undefined;
+  // Index after the last row required row or undefined for all rows.
+  endRow: number | undefined;
+  // Columns that are currently row grouped.
+  rowGroupCols: ColumnVO[];
+  // Columns that have aggregations on them.
+  valueCols: ColumnVO[];
+  // Columns that have pivot on them.
+  pivotCols: ColumnVO[];
+  // Defines if pivot mode is on or off.
+  pivotMode: boolean;
+  // What groups the user is viewing.
+  groupKeys: string[];
+  // If filtering, what the filter model is.
+  // If Advanced Filter is enabled, will be of type `AdvancedFilterModel | null`.
+  // If Advanced Filter is disabled, will be of type `FilterModel`.
+  // filterModel: FilterModel | AdvancedFilterModel | null;
+  // If sorting, what the sort model is.
+  sortModel: SortModelItem[];
+}
+
+interface ColumnVO {
+  id: string;
+  displayName: string;
+  field?: string;
+  aggFunc?: string;
+}
+
+interface SortModelItem {
+  // Column Id to apply the sort to.
+  colId: string;
+  // Sort direction
+  sort: 'asc' | 'desc';
+}
 export class HTMLCampusParser {
   private static bde_hash(text: string) {
     let hash = 0,
