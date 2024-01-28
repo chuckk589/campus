@@ -26,16 +26,14 @@ export class AxiosRetryService {
         })
         .then((response) => resolve(response))
         .catch((error) => {
-          this.logger.info(`Request failed with status code ${error?.response?.status}, retries left: ${3 - retries}`);
-          if (error?.response?.status === 429) {
-            if (retries < 3) {
-              retries++;
-              setTimeout(() => {
-                return this.request(options);
-              }, 3000 * retries);
-            } else {
-              reject(error);
-            }
+          this.logger.error(
+            `Request failed with status code ${error?.response?.status}, retries left: ${3 - retries}, url: ${options.url}`,
+          );
+          if (retries < 3) {
+            retries++;
+            setTimeout(() => {
+              return this.request(options);
+            }, 3000 * retries);
           } else {
             reject(error);
           }
