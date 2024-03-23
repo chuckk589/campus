@@ -26,5 +26,5 @@ README-*.md
 .idea/
 .vscode/
 *.iml
-
+.sh
 .env.*
