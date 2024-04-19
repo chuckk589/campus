@@ -5,11 +5,17 @@ import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
 import { RetrieveAnswerDto } from './dto/retrieve-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import JSZip from 'jszip';
-import { IServerSideGetRowsRequest } from 'src/types/interfaces';
+import { IServerSideGetRowsRequest, QuestionType } from 'src/types/interfaces';
+import { OpenAiService } from 'src/libs/openai/openai.service';
 
 @Injectable()
 export class AnswersService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager, private readonly openAiService: OpenAiService) {}
+
+  async getAiAnswer(id: number) {
+    const answer = await this.em.findOneOrFail(QuizAnswer, id);
+    return await this.openAiService.getAIResponse(answer.html, answer.question_type as QuestionType);
+  }
 
   async lazyload(body: IServerSideGetRowsRequest) {
     const answers = await this.em.find(

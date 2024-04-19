@@ -1,3 +1,5 @@
+import { JSDOM } from 'jsdom';
+
 /* eslint-disable no-constant-condition */
 export interface QuizAnswerRequest extends Request {
   user: {
@@ -43,6 +45,25 @@ interface SortModelItem {
   // Sort direction
   sort: 'asc' | 'desc';
 }
+// export type TextExtract<T> = T extends 0 | 2
+//   ? {
+//       subject: string;
+//       options: string[];
+//     }
+//   : T extends 1
+//   ? {
+//       subject: string;
+//       variants: {
+//         text: string;
+//         options: string[];
+//       }[];
+//     }
+//   : T extends 3
+//   ? {
+//       subject: string;
+//     }
+//   : never;
+export type QuestionType = 0 | 1 | 2 | 3;
 export class HTMLCampusParser {
   private static bde_hash(text: string) {
     let hash = 0,
@@ -181,6 +202,71 @@ export class HTMLCampusParser {
         if (issuccess) return JSON.stringify(jsondata);
         else return '';
       }
+    }
+  }
+  static extract_text(html: string, question_type: QuestionType): string {
+    if (question_type === 0 || question_type === 2) {
+      //checkboxes
+      // type qtype0 = {
+      //   subject: string;
+      //   options: string[];
+      // };
+
+      const output: any = { subject: '', options: [] };
+      const document = new JSDOM(html).window.document;
+      output.subject = document.querySelector('div.qtext').textContent;
+      const variants = document.querySelectorAll('.answer p');
+      for (let i = 0; i < variants.length; i++) {
+        const variant = variants[i];
+        output.options.push(variant.textContent);
+      }
+
+      return (
+        output.subject +
+        '\n' +
+        output.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '')
+      );
+    } else if (question_type === 1) {
+      // type qtype1 = {
+      //   subject: string;
+      //   variants: {
+      //     text: string;
+      //     options: string[];
+      //   }[];
+      // };
+
+      const output: any = { subject: '', variants: [] };
+      const document = new JSDOM(html).window.document;
+      output.subject = document.querySelector('div.qtext').textContent;
+      const variants = document.querySelectorAll('table.answer tr');
+      for (let i = 0; i < variants.length; i++) {
+        const variant = variants[i];
+        output.variants.push({
+          text: variant.querySelector('td.text').textContent,
+          options: Array.from(variant.querySelectorAll('td.control select option')).map((option) => option.textContent),
+        });
+      }
+
+      return (
+        output.subject +
+        '\n' +
+        output.variants.reduce((acc: string, variant: any) => {
+          acc += '\n' + variant.text;
+          acc += '\n' + variant.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '');
+          return acc;
+        }, '')
+      );
+    } else if (question_type === 3) {
+      //simple input
+      // type qtype3 = {
+      //   subject: string;
+      //   sub: number;
+      // };
+      const output: any = { subject: '' };
+      const document = new JSDOM(html).window.document;
+      output.subject = document.querySelector('div.qtext').textContent;
+
+      return output.subject;
     }
   }
 }

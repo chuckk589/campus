@@ -6,9 +6,12 @@
         class="ml-auto"
         variant="outlined"
         density="compact"
-        color="success"
-        @click="save"
+        small
+        @click="ai"
       >
+        chatgpt
+      </v-btn>
+      <v-btn variant="outlined" density="compact" color="success" @click="save">
         Сохранить
       </v-btn>
     </v-card-actions>
@@ -35,6 +38,52 @@ export default {
       });
   },
   methods: {
+    ai() {
+      this.$http({
+        method: 'GET',
+        url: `/v1/answers/${this.params.data.id}/ai`,
+      }).then((res) => {
+        console.log(res.data);
+        const qtype = this.params.data.question_type;
+        if (qtype == 3) {
+          this.$refs.question.querySelector('input[type=text]').value =
+            res.data;
+        } else if (qtype == 0) {
+          //checkboxes
+          this.$refs.question
+            .querySelectorAll('.answer input[type="checkbox"]')
+            .forEach((el, index) => {
+              if (res.data.includes(index)) {
+                el.checked = true;
+              } else {
+                el.checked = false;
+              }
+            });
+        } else if (qtype == 1) {
+          //several dropdowns
+          //make array
+          const arr = res.data.split(',');
+          this.$refs.question
+            .querySelectorAll('select')
+            .forEach((el, index) => {
+              //set option by index
+              el.selectedIndex = arr[index];
+            });
+        } else if (qtype == 2) {
+          const answer = parseInt(res.data);
+          //radio
+          this.$refs.question
+            .querySelectorAll('.answer input[type="radio"]')
+            .forEach((el, index) => {
+              if (answer == index) {
+                el.checked = true;
+              } else {
+                el.checked = false;
+              }
+            });
+        }
+      });
+    },
     save() {
       this.$http({
         method: 'PUT',

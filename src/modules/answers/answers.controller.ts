@@ -10,7 +10,7 @@ import { IServerSideGetRowsRequest } from 'src/types/interfaces';
   version: '1',
   path: 'answers',
 })
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 
@@ -32,5 +32,10 @@ export class AnswersController {
   @Put(':id')
   update(@Param('id') id: string, @Body() updateAnswerDto: UpdateAnswerDto) {
     return this.answersService.update(+id, updateAnswerDto);
+  }
+
+  @Get(':id/ai')
+  getAiAnswer(@Param('id') id: string) {
+    return this.answersService.getAiAnswer(+id);
   }
 }

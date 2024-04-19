@@ -8,10 +8,11 @@ import { RetrieveAttemptDto } from './dto/retrieve-attempt.dto';
 import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
 import { IServerSideGetRowsRequest } from 'src/types/interfaces';
+import { OpenAiService } from 'src/libs/openai/openai.service';
 
 @Injectable()
 export class AttemptService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager, private readonly openAI: OpenAiService) {}
 
   async lazyload(body: IServerSideGetRowsRequest) {
     const attempts = await this.em.find(
@@ -46,12 +47,14 @@ export class AttemptService {
       throw new HttpException('Answer not found', 404);
     }
   }
+
   async update(id: number, updateAttemptDto: UpdateAttemptDto) {
     const attempt = await this.em.findOneOrFail(QuizAttempt, id, { populate: ['user', 'attemptAnswers.answer'] });
     attempt.attemptStatus = updateAttemptDto.status;
     await this.em.persistAndFlush(attempt);
     return new RetrieveAttemptDto(attempt);
   }
+
   async findAll() {
     const attempts = await this.em.find(QuizAttempt, { user: { $ne: null } }, { populate: ['user', 'attemptAnswers.answer'] });
     return attempts.map((attempt) => new RetrieveAttemptDto(attempt));

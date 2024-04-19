@@ -25,5 +25,10 @@ export class ConfigSeeder extends Seeder {
       value: 'http://195.161.114.112:3000',
       description: 'Адрес сервера, используется при генерации расширения',
     });
+    em.create(Config, {
+      name: 'OPENAI_API_KEY',
+      value: 'null',
+      description: 'Ключ OpenAI API',
+    });
   }
 }
