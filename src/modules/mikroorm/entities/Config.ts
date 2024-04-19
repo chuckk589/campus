@@ -14,4 +14,7 @@ export class Config {
 
   @Property({ length: 255, nullable: true })
   description?: string;
+
+  @Property({ length: 255, nullable: true })
+  category?: string;
 }

@@ -27,8 +27,13 @@ export class ConfigSeeder extends Seeder {
     });
     em.create(Config, {
       name: 'OPENAI_API_KEY',
-      value: 'null',
+      value: '',
       description: 'Ключ OpenAI API',
+    });
+    em.create(Config, {
+      name: 'OPENAI_MODEL',
+      value: 'gpt-3.5-turbo',
+      description: 'Модель OpenAI',
     });
   }
 }

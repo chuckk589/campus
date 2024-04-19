@@ -15,6 +15,7 @@ import { User } from '../mikroorm/entities/User';
 @Injectable()
 export class StatusService {
   constructor(private readonly em: EntityManager) {}
+  private secrets = ['ADMIN_PASSCODE', 'OPENAI_API_KEY'];
   async getCurrentVersion(res: Response) {
     const data = await this.em.find(Config, { name: { $in: ['HOSTNAME', 'VERSION'] } });
     if (data.length !== 2) throw new HttpException('Не удалось получить версию', 500);
@@ -62,18 +63,29 @@ export class StatusService {
       failed: 'Неверно',
       default: 'Неизвестно',
     };
+    const chatgpt_models = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview'];
     return {
       code_status: Object.values(CodeStatus).map((status) => new RetrieveStatusDto({ value: status, title: code_statuses[status] })),
       quiz_status: Object.values(AttemptStatus).map((status) => new RetrieveStatusDto({ value: status, title: quiz_statuses[status] })),
       que_result: Object.values(QuestionResult).map((status) => new RetrieveStatusDto({ value: status, title: que_statuses[status] })),
+      models: chatgpt_models.map((model) => new RetrieveStatusDto({ value: model, title: model })),
     };
   }
 
   async findConfigs() {
-    return await this.em.find('Config', {});
+    const configs = await this.em.find(Config, {});
+    //cut secret values
+    return configs.map((config) => {
+      if (this.secrets.includes(config.name)) {
+        config.value = '';
+      }
+      return config;
+    });
   }
   async updateConfig(id: number, updateConfigDto: UpdateConfigDto) {
     const config = await this.em.findOneOrFail(Config, id);
+    //check if secret and not null
+    if (this.secrets.includes(config.name) && !updateConfigDto.value) return;
     if (config.name == 'ADMIN_PASSCODE') {
       updateConfigDto.value && (config.value = await hash(updateConfigDto.value, 10));
     } else if (config.name == 'QUESTION_TIME') {

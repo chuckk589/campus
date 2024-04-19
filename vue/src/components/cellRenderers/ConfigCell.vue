@@ -17,6 +17,18 @@ export default {
     return {};
   },
   methods: {
+    fieldTypeResolver(field) {
+      if (field === 'OPENAI_MODEL') {
+        return 'select';
+      }
+      return 'textarea';
+    },
+    optionsResolver(field) {
+      if (field === 'OPENAI_MODEL') {
+        return this.$ctable.models;
+      }
+      return undefined;
+    },
     edit() {
       this.$emitter.emit('openModal', {
         url: `/status/configs/${this.params.data.id}`,
@@ -27,8 +39,9 @@ export default {
           {
             key: 'value',
             label: 'Значение',
-            type: 'textarea',
+            type: this.fieldTypeResolver(this.params.data.name),
             value: this.params.data.value,
+            options: this.optionsResolver(this.params.data.name),
           },
           {
             key: 'description',

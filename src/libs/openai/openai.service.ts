@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { EntityManager } from '@mikro-orm/core';
+import { HttpException, Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { AppConfigService } from 'src/modules/app-config/app-config.service';
+import { Config } from 'src/modules/mikroorm/entities/Config';
 import { QuestionType } from 'src/types/interfaces';
 import { HTMLCampusParser } from 'src/types/interfaces';
 
@@ -12,7 +14,7 @@ export class OpenAiService {
   //   public searchService: OpenAiSearchService;
   //   public completionService: OpenAiCompletionService;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: AppConfigService, private readonly em: EntityManager) {
     const configuration = {
       apiKey: this.configService.get('OPENAI_API_KEY'),
     };
@@ -33,17 +35,22 @@ export class OpenAiService {
   }
 
   public async getAIResponse(html: string, question_type: QuestionType): Promise<string> {
+    const currentModel = await this.em.findOneOrFail(Config, { name: 'OPENAI_MODEL' });
     const output = HTMLCampusParser.extract_text(html, question_type);
     const supplyTexts = [
       'Выбери один или несколько правильных вариантов и верни их индексы через запятую',
       'Выбери по одному варианту для каждого вопроса и верни их индексы через запятую',
       'Выбери единственный правильный вариант ответа и верни его номер',
-      'Дай ответ одним предложением',
+      'Дай краткий ответ одним предложением',
     ];
-    const response = await this.client.chat.completions.create({
-      messages: [{ role: 'user', content: supplyTexts[question_type] + '\n' + output }],
-      model: 'gpt-3.5-turbo',
-    });
+    const response = await this.client.chat.completions
+      .create({
+        messages: [{ role: 'user', content: supplyTexts[question_type] + '\n' + output }],
+        model: currentModel.value,
+      })
+      .catch((error) => {
+        throw new HttpException(error.message, 500);
+      });
     // console.log(response.choices[0].message);
     return response.choices[0].message.content;
   }

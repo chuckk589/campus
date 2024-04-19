@@ -55,7 +55,12 @@ export default {
           hide: true,
         },
         { field: 'name', headerName: 'Имя' },
-        { field: 'value', headerName: 'Значение' },
+        {
+          field: 'value',
+          headerName: 'Значение',
+          valueFormatter: this.privateFormatter,
+        },
+
         { field: 'description', headerName: 'Описание' },
         {
           field: 'action',
@@ -84,6 +89,11 @@ export default {
     this.$emitter.off('drop-db');
   },
   methods: {
+    privateFormatter(params) {
+      if (params.data.category == 'secret') {
+        return '******';
+      }
+    },
     getExtension() {
       this.loading = true;
       this.$http({
@@ -119,6 +129,7 @@ export default {
         this.gridApi.setRowData(this.rowData);
       });
       this.$emitter.on('edit-config', (evt) => {
+        if (!evt || evt.category == 'secret') return;
         const rowNode = this.gridApi.getRowNode(evt.id);
         rowNode.setData(evt);
       });
