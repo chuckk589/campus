@@ -10,7 +10,7 @@ import { IServerSideGetRowsRequest } from 'src/types/interfaces';
   version: '1',
   path: 'answers',
 })
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 

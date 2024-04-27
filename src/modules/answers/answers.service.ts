@@ -1,4 +1,5 @@
-import { EntityManager } from '@mikro-orm/core';
+import 'openai/shims/node'; //temporary fix for openai tests
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { HttpException } from '@nestjs/common/exceptions';
 import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
@@ -73,12 +74,12 @@ export class AnswersService {
   async update(id: number, updateAnswerDto: UpdateAnswerDto) {
     try {
       JSON.parse(updateAnswerDto.json);
-      const answer = await this.em.findOneOrFail(QuizAnswer, id);
-      answer.jsonAnswer = updateAnswerDto.json;
-      await this.em.persistAndFlush(answer);
-      return new RetrieveAnswerDto(answer);
     } catch (error) {
       throw new HttpException('Invalid JSON', 400);
     }
+    const answer = await this.em.findOneOrFail(QuizAnswer, id);
+    answer.jsonAnswer = updateAnswerDto.json;
+    await this.em.persistAndFlush(answer);
+    return new RetrieveAnswerDto(answer);
   }
 }

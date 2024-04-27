@@ -6,6 +6,7 @@ import { AttemptService } from './attempt.service';
 import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
 import { IServerSideGetRowsRequest } from 'src/types/interfaces';
+import { AnswersService } from '../answers/answers.service';
 
 @Controller({ version: '1', path: 'attempt' })
 @UseGuards(JwtAuthGuard)
@@ -36,8 +37,15 @@ export class AttemptController {
   updateAnswer(@Param('id') id: string, @Body() updateAttemptAnswerDto: UpdateAttemptAnswerDto) {
     return this.attemptService.updateAnswer(+id, updateAttemptAnswerDto);
   }
+
+  @Get('/pattern/:id/ai')
+  getAiAnswer(@Param('id') attemptAnswerId: string) {
+    return this.attemptService.getAiAnswer(+attemptAnswerId);
+  }
+
   @Put('/pattern/:id')
   updatePattern(@Param('id') attemptAnswerId: string, @Body() updateAnswerDto: UpdateAnswerDto) {
     return this.attemptService.updatePattern(+attemptAnswerId, updateAnswerDto);
   }
 }
+// /attempt/pattern/84/ai

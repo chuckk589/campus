@@ -45,24 +45,7 @@ interface SortModelItem {
   // Sort direction
   sort: 'asc' | 'desc';
 }
-// export type TextExtract<T> = T extends 0 | 2
-//   ? {
-//       subject: string;
-//       options: string[];
-//     }
-//   : T extends 1
-//   ? {
-//       subject: string;
-//       variants: {
-//         text: string;
-//         options: string[];
-//       }[];
-//     }
-//   : T extends 3
-//   ? {
-//       subject: string;
-//     }
-//   : never;
+
 export type QuestionType = 0 | 1 | 2 | 3;
 export class HTMLCampusParser {
   private static bde_hash(text: string) {
@@ -206,19 +189,19 @@ export class HTMLCampusParser {
   }
   static extract_text(html: string, question_type: QuestionType): string {
     if (question_type === 0 || question_type === 2) {
-      //checkboxes
-      // type qtype0 = {
-      //   subject: string;
-      //   options: string[];
-      // };
-
+      //radio or checkbox
       const output: any = { subject: '', options: [] };
       const document = new JSDOM(html).window.document;
       output.subject = document.querySelector('div.qtext').textContent;
       const variants = document.querySelectorAll('.answer p');
       for (let i = 0; i < variants.length; i++) {
         const variant = variants[i];
-        output.options.push(variant.textContent);
+        let content = variant.textContent;
+        if (content.length === 0) {
+          const img = variant.querySelector('img');
+          if (img) content = new URL(img.src, process.env.HOSTNAME).href;
+        }
+        output.options.push(content);
       }
 
       return (
@@ -227,26 +210,23 @@ export class HTMLCampusParser {
         output.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '')
       );
     } else if (question_type === 1) {
-      // type qtype1 = {
-      //   subject: string;
-      //   variants: {
-      //     text: string;
-      //     options: string[];
-      //   }[];
-      // };
-
+      //select
       const output: any = { subject: '', variants: [] };
       const document = new JSDOM(html).window.document;
       output.subject = document.querySelector('div.qtext').textContent;
       const variants = document.querySelectorAll('table.answer tr');
       for (let i = 0; i < variants.length; i++) {
         const variant = variants[i];
+        let content = variant.querySelector('td.text').textContent;
+        if (content.length === 0) {
+          const img = variant.querySelector('td.text img') as HTMLImageElement;
+          if (img) content = new URL(img.src, process.env.HOSTNAME).href;
+        }
         output.variants.push({
-          text: variant.querySelector('td.text').textContent,
+          text: content,
           options: Array.from(variant.querySelectorAll('td.control select option')).map((option) => option.textContent),
         });
       }
-
       return (
         output.subject +
         '\n' +
@@ -257,15 +237,12 @@ export class HTMLCampusParser {
         }, '')
       );
     } else if (question_type === 3) {
-      //simple input
-      // type qtype3 = {
-      //   subject: string;
-      //   sub: number;
-      // };
       const output: any = { subject: '' };
       const document = new JSDOM(html).window.document;
       output.subject = document.querySelector('div.qtext').textContent;
-
+      //apply image if exists
+      const img = document.querySelector('div.qtext img') as HTMLImageElement;
+      if (img) output.subject += '\n' + new URL(img.src, process.env.HOSTNAME).href;
       return output.subject;
     }
   }

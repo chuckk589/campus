@@ -1,5 +1,4 @@
-import { wrap } from '@mikro-orm/core';
-import { EntityManager } from '@mikro-orm/mysql';
+import { EntityManager, wrap } from '@mikro-orm/core';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AppConfigService } from '../app-config/app-config.service';
@@ -58,6 +57,7 @@ export class QuizService {
     quiz.attemptStatus = AttemptStatus.FINISHED;
     quiz.result = new QuizResult(finishQuizDto.summaryData);
     await this.em.persistAndFlush(quiz);
+    return quiz;
   }
   async createQuiz(createQuizDto: CreateQuizDto) {
     const code = await this.em.findOne(Code, { value: createQuizDto.code });

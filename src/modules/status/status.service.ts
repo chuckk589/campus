@@ -63,7 +63,7 @@ export class StatusService {
       failed: 'Неверно',
       default: 'Неизвестно',
     };
-    const chatgpt_models = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview'];
+    const chatgpt_models = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-vision-preview'];
     return {
       code_status: Object.values(CodeStatus).map((status) => new RetrieveStatusDto({ value: status, title: code_statuses[status] })),
       quiz_status: Object.values(AttemptStatus).map((status) => new RetrieveStatusDto({ value: status, title: quiz_statuses[status] })),

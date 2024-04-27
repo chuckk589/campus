@@ -9,6 +9,7 @@ export class ConfigSeeder extends Seeder {
       name: 'ADMIN_PASSCODE',
       value: '$2a$12$DC3oYahZU5pZIFbFMhminuEnlSPXb4coN8AfEOkRpcOTpefSXSdAu', //1
       description: 'Пароль администратора',
+      category: 'secret',
     });
     em.create(Config, {
       name: 'VERSION',
@@ -29,11 +30,17 @@ export class ConfigSeeder extends Seeder {
       name: 'OPENAI_API_KEY',
       value: '',
       description: 'Ключ OpenAI API',
+      category: 'secret',
     });
     em.create(Config, {
       name: 'OPENAI_MODEL',
-      value: 'gpt-3.5-turbo',
+      value: 'gpt-4-vision-preview',
       description: 'Модель OpenAI',
+    });
+    em.create(Config, {
+      name: 'OPENAI_REPEATS',
+      value: '3',
+      description: 'Количество повторений запроса к OpenAI',
     });
   }
 }

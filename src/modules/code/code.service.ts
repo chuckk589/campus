@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql';
 import { Injectable } from '@nestjs/common';
 import { Code } from '../mikroorm/entities/Code';
 import { CreateCodeDto } from './dto/create-code.dto';
@@ -6,6 +5,7 @@ import crypto from 'crypto';
 import { RetrieveCodeDto } from './dto/retrieve-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
 import { UserRestriction } from '../mikroorm/entities/UserRestriction';
+import { EntityManager } from '@mikro-orm/core';
 
 @Injectable()
 export class CodeService {

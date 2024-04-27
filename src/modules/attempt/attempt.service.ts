@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { HttpException, Injectable } from '@nestjs/common';
 import { UpdateAnswerDto } from '../answers/dto/update-answer.dto';
 import { QuizAttempt } from '../mikroorm/entities/QuizAttempt';
@@ -7,12 +7,17 @@ import { RetrieveAttemptAnswerDto } from './dto/retrieve-attempt-answer.dto';
 import { RetrieveAttemptDto } from './dto/retrieve-attempt.dto';
 import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
-import { IServerSideGetRowsRequest } from 'src/types/interfaces';
+import { IServerSideGetRowsRequest, QuestionType } from 'src/types/interfaces';
 import { OpenAiService } from 'src/libs/openai/openai.service';
 
 @Injectable()
 export class AttemptService {
-  constructor(private readonly em: EntityManager, private readonly openAI: OpenAiService) {}
+  constructor(private readonly em: EntityManager, private readonly openAiService: OpenAiService) {}
+
+  async getAiAnswer(id: number) {
+    const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, { id }, { populate: ['answer'] });
+    return await this.openAiService.getAIResponse(attemptAnswer.answer.html, attemptAnswer.answer.question_type as QuestionType);
+  }
 
   async lazyload(body: IServerSideGetRowsRequest) {
     const attempts = await this.em.find(
@@ -37,12 +42,12 @@ export class AttemptService {
     if (attemptAnswer.answer) {
       try {
         JSON.parse(updateAnswerDto.json);
-        attemptAnswer.answer.jsonAnswer = updateAnswerDto.json;
-        await this.em.persistAndFlush(attemptAnswer);
-        return new RetrieveAttemptAnswerDto(attemptAnswer);
       } catch (error) {
         throw new HttpException('Invalid JSON', 400);
       }
+      attemptAnswer.answer.jsonAnswer = updateAnswerDto.json;
+      await this.em.persistAndFlush(attemptAnswer);
+      return new RetrieveAttemptAnswerDto(attemptAnswer);
     } else {
       throw new HttpException('Answer not found', 404);
     }
