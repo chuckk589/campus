@@ -16,7 +16,7 @@ export class TestService {
         return {
           id: answer.id,
           question: HTMLCampusParser.extract_text(answer.html, answer.question_type as QuestionType, true),
-          answer: HTMLCampusParser.extract_answers(answer.html, answer.question_type as QuestionType, answer.jsonAnswer) || null,
+          answer: HTMLCampusParser.extract_answers(answer.html, answer.question_type as QuestionType, answer.jsonAnswer),
           type: {
             id: answer.question_type,
             name: questionTypes[answer.question_type],

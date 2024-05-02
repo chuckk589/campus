@@ -270,7 +270,7 @@ export class HTMLCampusParser {
         return parsed.text;
       }
     } catch (error) {
-      return undefined;
+      return null;
     }
   }
 }
