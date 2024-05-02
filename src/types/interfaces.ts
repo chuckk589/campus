@@ -187,7 +187,8 @@ export class HTMLCampusParser {
       }
     }
   }
-  static extract_text(html: string, question_type: QuestionType, isService = false): string {
+  //FIXME: fix types
+  static extract_text(html: string, question_type: QuestionType, isService = false): any {
     if (question_type === 0 || question_type === 2) {
       //radio or checkbox
       const output: any = { subject: '', options: [] };
@@ -244,6 +245,32 @@ export class HTMLCampusParser {
       const img = document.querySelector('div.qtext img') as HTMLImageElement;
       if (img) output.subject += '\n' + new URL(img.src, process.env.HOSTNAME).href;
       return isService ? output : output.subject;
+    }
+  }
+  //FIXME: fix types
+  static extract_answers(html: string, question_type: QuestionType, htmlAnswer: string): any {
+    try {
+      if (htmlAnswer === null) throw new Error('htmlAnswer is null');
+      const parsed = JSON.parse(htmlAnswer);
+
+      if (question_type === 0 || question_type === 2) {
+        //radio or checkbox
+        return parsed.reduce((acc: string[], option: { checked: boolean; value: string }, index: number) => {
+          if (option.checked) acc.push(index.toString());
+          return acc;
+        }, []);
+      } else if (question_type === 1) {
+        //select
+        const payload = this.extract_text(html, question_type, true);
+        return parsed.map((option: { text: string; value: string }, index: number) => {
+          const variant = payload.variants[index].options.findIndex((el: string) => el.toLowerCase() === option.value);
+          return variant.toString();
+        });
+      } else if (question_type === 3) {
+        return parsed.text;
+      }
+    } catch (error) {
+      return undefined;
     }
   }
 }
