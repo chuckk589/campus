@@ -187,7 +187,7 @@ export class HTMLCampusParser {
       }
     }
   }
-  static extract_text(html: string, question_type: QuestionType): string {
+  static extract_text(html: string, question_type: QuestionType, isService = false): string {
     if (question_type === 0 || question_type === 2) {
       //radio or checkbox
       const output: any = { subject: '', options: [] };
@@ -204,11 +204,11 @@ export class HTMLCampusParser {
         output.options.push(content);
       }
 
-      return (
-        output.subject +
-        '\n' +
-        output.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '')
-      );
+      return isService
+        ? output
+        : output.subject +
+            '\n' +
+            output.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '');
     } else if (question_type === 1) {
       //select
       const output: any = { subject: '', variants: [] };
@@ -227,15 +227,15 @@ export class HTMLCampusParser {
           options: Array.from(variant.querySelectorAll('td.control select option')).map((option) => option.textContent),
         });
       }
-      return (
-        output.subject +
-        '\n' +
-        output.variants.reduce((acc: string, variant: any) => {
-          acc += '\n' + variant.text;
-          acc += '\n' + variant.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '');
-          return acc;
-        }, '')
-      );
+      return isService
+        ? output
+        : output.subject +
+            '\n' +
+            output.variants.reduce((acc: string, variant: any) => {
+              acc += '\n' + variant.text;
+              acc += '\n' + variant.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '');
+              return acc;
+            }, '');
     } else if (question_type === 3) {
       const output: any = { subject: '' };
       const document = new JSDOM(html).window.document;
@@ -243,7 +243,7 @@ export class HTMLCampusParser {
       //apply image if exists
       const img = document.querySelector('div.qtext img') as HTMLImageElement;
       if (img) output.subject += '\n' + new URL(img.src, process.env.HOSTNAME).href;
-      return output.subject;
+      return isService ? output : output.subject;
     }
   }
 }

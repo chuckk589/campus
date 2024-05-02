@@ -15,6 +15,7 @@ import { ResultsModule } from './modules/results/results.module';
 import { AxiosRetryModule } from './modules/axios-retry/axios-retry.module';
 import ORMOptionsProvider from 'src/configs/mikro-orm.config';
 import { RestrictionModule } from './modules/restriction/restriction.module';
+import { TestModule } from './modules/test/test.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { RestrictionModule } from './modules/restriction/restriction.module';
     ResultsModule,
     AxiosRetryModule,
     RestrictionModule,
+    TestModule,
   ],
   controllers: [],
   providers: [],
