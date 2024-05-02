@@ -26,10 +26,7 @@ export class OpenAiService {
     }
     const [model, repeats] = currentModel;
     const output = HTMLCampusParser.extract_text(html, question_type);
-    console.log({
-      subject: output,
-      question_type,
-    });
+
     return '';
     const supplyTexts = [
       'Выбери один или несколько правильных вариантов и верни их индексы через запятую',

@@ -8,7 +8,11 @@ export class TestService {
   constructor(private readonly em: EntityManager) {}
 
   async findAll(query: { limit: number; offset: number }) {
-    const answers = await this.em.findAndCount(QuizAnswer, {}, { limit: query.limit, offset: query.offset });
+    const answers = await this.em.findAndCount(
+      QuizAnswer,
+      { question_type: { $in: [0, 1, 2, 3] } },
+      { limit: query.limit, offset: query.offset },
+    );
 
     const questionTypes = ['checkbox', 'select', 'radio', 'input'];
     return {
