@@ -39,6 +39,14 @@ export default {
             .click();
         });
       });
+    //fill inputs
+    if (this.params.data.jsonAnswer) {
+      HTMLCampusParser.bde_mainfunc(
+        this.params.data.jsonAnswer,
+        this.params.data.question_type,
+        this.$refs.question,
+      );
+    }
   },
   methods: {
     ai() {
@@ -97,7 +105,10 @@ export default {
         method: 'PUT',
         url: `${this.params.url}${this.params.data.id}`,
         data: {
-          json: HTMLCampusParser.bde_mainfunc(this.params.data.question_type),
+          json: HTMLCampusParser.bde_get_answer(
+            this.params.data.question_type,
+            this.$refs.question,
+          ),
         },
       }).then((res) => {
         this.$emitter.emit('edit-answer', res.data);

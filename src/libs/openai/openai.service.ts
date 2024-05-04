@@ -20,27 +20,27 @@ export class OpenAiService {
   }
 
   public async getAIResponse(html: string, question_type: QuestionType): Promise<string> {
-    const currentModel = await this.em.find(Config, { name: { $in: ['OPENAI_MODEL', 'OPENAI_REPEATS'] } });
-    if (currentModel.length !== 2) {
-      throw new HttpException('Не найдены настройки OpenAI', 500);
-    }
-    const [model, repeats] = currentModel;
-    const output = HTMLCampusParser.extract_text(html, question_type);
+    // const currentModel = await this.em.find(Config, { name: { $in: ['OPENAI_MODEL', 'OPENAI_REPEATS'] } });
+    // if (currentModel.length !== 2) {
+    //   throw new HttpException('Не найдены настройки OpenAI', 500);
+    // }
+    // const [model, repeats] = currentModel;
+    // const output = HTMLCampusParser.extract_text_DEV(html, question_type);
 
+    // const supplyTexts = [
+    //   'Выбери один или несколько правильных вариантов и верни их индексы через запятую',
+    //   'Выбери по одному варианту для каждого вопроса и верни их индексы через запятую',
+    //   'Реши задачу и дай ответ индексом без решения',
+    //   'Реши задачу и верни ответ одним словом или цифрой без решения',
+    // ];
+
+    // const result = await this.getResponseWithCtx(supplyTexts[question_type] + '\n' + output, +repeats.value, model.value);
+    // //return most common response
+    // // console.log(output + '\n' + supplyTexts[question_type], result);
+    // const counts = result.reduce((acc, val) => acc.set(val, 1 + (acc.get(val) || 0)), new Map<string, number>());
+    // const max = [...counts.entries()].reduce((a, e) => (e[1] > a[1] ? e : a));
+    // return max[0];
     return '';
-    const supplyTexts = [
-      'Выбери один или несколько правильных вариантов и верни их индексы через запятую',
-      'Выбери по одному варианту для каждого вопроса и верни их индексы через запятую',
-      'Реши задачу и дай ответ индексом без решения',
-      'Реши задачу и верни ответ одним словом или цифрой без решения',
-    ];
-
-    const result = await this.getResponseWithCtx(supplyTexts[question_type] + '\n' + output, +repeats.value, model.value);
-    //return most common response
-    // console.log(output + '\n' + supplyTexts[question_type], result);
-    const counts = result.reduce((acc, val) => acc.set(val, 1 + (acc.get(val) || 0)), new Map<string, number>());
-    const max = [...counts.entries()].reduce((a, e) => (e[1] > a[1] ? e : a));
-    return max[0];
   }
   private async getResponseWithCtx(subject: string, repeats: number, model: string, prev: string[] = []): Promise<string[]> {
     if (repeats <= 0) {

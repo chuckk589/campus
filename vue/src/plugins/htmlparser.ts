@@ -9,7 +9,7 @@ export class HTMLCampusParser {
     }
     return text;
   }
-  static bde_mainfunc(type: number) {
+  static bde_get_answer(type: number, document: HTMLElement) {
     if (type == 0) {
       const jsondata = [];
       const listelems = document.querySelectorAll(
@@ -128,6 +128,77 @@ export class HTMLCampusParser {
       }
 
       return JSON.stringify(jsondata) || '';
+    }
+  }
+  //this is used to fill answers only
+  static bde_mainfunc(answerData: string, type: number, document: HTMLElement) {
+    try {
+      const jsonArr = JSON.parse(answerData);
+      let answerElements;
+      if (type == 0) {
+        //https://campus.fa.ru/mod/quiz/view.php?id=186319 checkbox images
+        answerElements = document.querySelectorAll(
+          'div.answer input[type="checkbox"]',
+        ) as NodeListOf<HTMLInputElement>;
+        for (const box of answerElements) {
+          const checkboxValue =
+            box.parentNode?.textContent?.trim().toLowerCase() ||
+            this.bde_fromsrc(box.parentNode?.querySelector('img')?.src || '');
+          const state = jsonArr.find(
+            (e: any) => e.value == checkboxValue,
+          )?.checked;
+          if (state == box.checked) continue;
+          box.checked = state;
+        }
+      } else if (type == 1) {
+        //https://campus.fa.ru/mod/quiz/attempt.php?attempt=1020486&cmid=483589&page=2 select example
+        const answerTexts = document.querySelectorAll('table.answer td.text');
+        answerElements = document.querySelectorAll(
+          'table.answer select',
+        ) as NodeListOf<HTMLSelectElement>;
+        for (let i = 0; i < answerTexts.length; i++) {
+          const text =
+            answerTexts[i].textContent?.trim().toLowerCase() ||
+            this.bde_fromsrc(answerTexts[i].querySelector('img')?.src || '');
+          const value = jsonArr.find((e: any) => e.text == text)?.value;
+          const optionIndex = Array.from(answerElements[i].options).findIndex(
+            (e: any) => e.text.trim().toLowerCase() == value,
+          );
+          //check if update is needed
+          if (answerElements[i].selectedIndex == optionIndex) continue;
+          answerElements[i].selectedIndex = optionIndex;
+        }
+      } else if (type == 2) {
+        answerElements = document.querySelectorAll(
+          'div.answer input[type="radio"]',
+        ) as NodeListOf<HTMLInputElement>;
+        if (
+          Array.from(answerElements)
+            .map((e: any) => e.checked)
+            .some((e) => e)
+        )
+          return; //check if already answered
+        const checkedValue = jsonArr.find((e: any) => e.checked)?.value;
+        let checkedRadio = Array.from(answerElements).find(
+          (e: any) =>
+            e.parentNode?.textContent?.trim().toLowerCase() == checkedValue,
+        );
+        if (!checkedRadio)
+          checkedRadio = Array.from(answerElements).find(
+            (e: any) =>
+              this.bde_fromsrc(e.parentNode?.querySelector('img')?.src) ==
+              checkedValue,
+          ); //image radio
+        checkedRadio!.checked = true;
+      } else if (type == 3) {
+        answerElements = document.querySelector(
+          'span.answer input[type="text"]',
+        ) as HTMLInputElement;
+        if (answerElements.value) return; // check if already answered
+        answerElements.value = jsonArr['text'];
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 }
