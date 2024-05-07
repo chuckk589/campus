@@ -29,6 +29,10 @@ services:
     command: sh -c -f "yarn mikro-orm schema:update --run&&yarn mikro-orm seeder:run --class=ConfigSeeder;yarn run start:prod"
     restart: unless-stopped
     env_file: ./.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m" 
     environment:
       - NODE_ENV=${NODE_ENV}
     volumes:

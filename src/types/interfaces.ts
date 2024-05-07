@@ -177,142 +177,66 @@ export class HTMLCampusParser {
     }
     return { resultype, question_idhash };
   }
-  // static get_template(document: HTMLElement, question_type: number) {
-  //   switch (question_type) {
-  //     case 0: {
-  //       const jsondata = [];
-  //       let issuccess = false;
-
-  //       const listelems = document.querySelectorAll('div.answer input[type="checkbox"]') as any;
-  //       if (listelems.length > 0) {
-  //         for (let i = 0; i < listelems.length; i++) {
-  //           const thischecked = listelems[i].checked;
-  //           let thisvalue = listelems[i].parentNode.textContent.trim().toLowerCase();
-  //           if (thisvalue.length == 0) {
-  //             const elemimg = listelems[i].parentNode.querySelector('img');
-  //             if (elemimg) {
-  //               thisvalue = this.bde_fromsrc(elemimg.src);
-  //             }
-  //           }
-  //           if (thischecked) issuccess = true;
-  //           jsondata.push({ checked: thischecked, value: thisvalue });
-  //         }
-  //       }
-
-  //       if (issuccess) return JSON.stringify(jsondata);
-  //       else return '';
-  //     }
-  //   }
-  // }
-  // static extract_text_DEV(html: string, question_type: QuestionType, isService = false): any {
-  //   if (question_type === 0 || question_type === 2) {
-  //     //radio or checkbox
-  //     const output: any = { subject: '', options: [] };
-  //     const document = new JSDOM(html).window.document;
-  //     // output.subject = document.querySelector('div.qtext').textContent;
-  //     output.subject = this.extract_text_from_html(document.querySelector('div.qtext'));
-  //     const variants = document.querySelectorAll('.answer p');
-  //     for (let i = 0; i < variants.length; i++) {
-  //       const variant = variants[i];
-  //       // let content = variant.textContent;
-  //       let content = this.extract_text_from_html(variant);
-  //       if (content.length === 0) {
-  //         const img = variant.querySelector('img');
-  //         if (img) content = new URL(img.src, process.env.HOSTNAME).href;
-  //       }
-  //       output.options.push(content);
-  //     }
-
-  //     return isService
-  //       ? output
-  //       : output.subject +
-  //           '\n' +
-  //           output.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '');
-  //   } else if (question_type === 1) {
-  //     //select
-  //     const output: any = { subject: '', variants: [] };
-  //     const document = new JSDOM(html).window.document;
-  //     // output.subject = document.querySelector('div.qtext').textContent;
-  //     output.subject = this.extract_text_from_html(document.querySelector('div.qtext'));
-  //     const variants = document.querySelectorAll('table.answer tr');
-  //     for (let i = 0; i < variants.length; i++) {
-  //       const variant = variants[i];
-  //       // let content = variant.querySelector('td.text').textContent;
-  //       let content = this.extract_text_from_html(variant.querySelector('td.text'));
-  //       if (content.length === 0) {
-  //         const img = variant.querySelector('td.text img') as HTMLImageElement;
-  //         if (img) content = new URL(img.src, process.env.HOSTNAME).href;
-  //       }
-  //       output.variants.push({
-  //         text: content,
-  //         options: Array.from(variant.querySelectorAll('td.control select option')).map((option) => option.textContent),
-  //       });
-  //     }
-  //     return isService
-  //       ? output
-  //       : output.subject +
-  //           '\n' +
-  //           output.variants.reduce((acc: string, variant: any) => {
-  //             acc += '\n' + variant.text;
-  //             acc += '\n' + variant.options.reduce((acc: string, option: string, index: number) => acc + '\n' + index + ') ' + option, '');
-  //             return acc;
-  //           }, '');
-  //   } else if (question_type === 3) {
-  //     const output: any = { subject: '' };
-  //     const document = new JSDOM(html).window.document;
-  //     // output.subject = document.querySelector('div.qtext').textContent;
-  //     output.subject = this.extract_text_from_html(document.querySelector('div.qtext'));
-  //     //apply image if exists
-  //     const img = document.querySelector('div.qtext img') as HTMLImageElement;
-  //     if (img) output.subject += '\n' + new URL(img.src, process.env.HOSTNAME).href;
-  //     return isService ? output : output.subject;
-  //   }
-  // }
-  // static extract_answers_DEV(html: string, question_type: QuestionType, htmlAnswer: string): any {
-  //   try {
-  //     if (htmlAnswer === null) throw new Error('htmlAnswer is null');
-  //     const parsed = JSON.parse(htmlAnswer);
-  //     if (question_type === 0 || question_type === 2) {
-  //       //radio or checkbox
-  //       return parsed.reduce((acc: string[], option: { checked: boolean; value: string }, index: number) => {
-  //         if (option.checked) acc.push(index.toString());
-  //         return acc;
-  //       }, []);
-  //     } else if (question_type === 1) {
-  //       //select
-  //       // const payload = this.extract_text_DEV(html, question_type, true);
-  //       return parsed.map((option: { text: string; value: string }, index: number) => {
-  //         const variant = payload.variants[index].options.findIndex((el: string) => el.toLowerCase() === option.value);
-  //         return variant.toString();
-  //       });
-  //     } else if (question_type === 3) {
-  //       return parsed.text;
-  //     }
-  //   } catch (error) {
-  //     return null;
-  //   }
-  // }
+  static parse_question_answers<T extends QuestionType>(
+    payload: QuestionPayload<T>,
+    question_type: T,
+    jsonAnswer: string | null,
+  ): QuestionOutput<T> {
+    try {
+      if (jsonAnswer === null) throw new Error();
+      const parsed = JSON.parse(jsonAnswer);
+      if (question_type === 0 || question_type === 2) {
+        //radio or checkbox
+        return parsed.reduce((acc: string[], option: { checked: boolean }, index: number) => {
+          option.checked && acc.push(index.toString());
+          return acc;
+        }, []);
+      } else if (question_type === 1) {
+        //select
+        return parsed.reduce((acc: string[], option: { text: string; value: string }, index: number) => {
+          const variant = (payload as QuestionPayload<1>).variants[index].options.findIndex(
+            (el: string) => el.toLowerCase() === option.value,
+          );
+          acc.push(variant.toString());
+          return acc;
+        }, []);
+      } else if (question_type === 3) {
+        return parsed.text;
+      }
+    } catch (error) {
+      return null;
+    }
+  }
   static parse_question_data<T extends QuestionType>(html: string, question_type: T): QuestionPayload<T> {
     try {
       if (!html || !html.length) throw new Error();
       const document = new JSDOM(html).window.document;
       let output: QuestionPayload<T>;
       if (question_type === 0 || question_type === 2) {
-        output = { subject: '', options: [] } as any;
-        output.subject = this.extract_text_from_html(document.querySelector('div.qtext'));
-        // output.options = Array.from(document.querySelectorAll('.answer p')).map((variant) => this.extract_text_from_html(variant));
+        output = {
+          subject: this.extract_text_from_html(document.querySelector('div.qtext')),
+          options: Array.from(document.querySelectorAll('.answer p')).map((variant) => this.extract_text_from_html(variant)),
+        } as QuestionPayload<T>;
+      } else if (question_type === 1) {
+        output = {
+          subject: this.extract_text_from_html(document.querySelector('div.qtext')),
+          variants: Array.from(document.querySelectorAll('table.answer tr')).map((variant) => ({
+            text: this.extract_text_from_html(variant.querySelector('td.text')),
+            options: Array.from(variant.querySelectorAll('td.control select option')).map((option) => this.extract_text_from_html(option)),
+          })),
+        } as QuestionPayload<T>;
+      } else if (question_type === 3) {
+        output = {
+          subject: this.extract_text_from_html(document.querySelector('div.qtext')),
+        } as QuestionPayload<T>;
       }
       return output;
     } catch (error) {
       return null;
     }
   }
-  // static parse_quiz_data<T extends QuestionType>(html: string, question_type: T, jsonAnswer: string | null): ParsedQuizAnswer<T> {
-  //   try {
-  //   } catch (error) {}
-  //   return '' as any;
-  // }
-  private static *extract_children(element: Element): any {
+
+  private static *extract_children(element: Element): Generator<string> {
     if (element.children.length === 0) {
       yield element.textContent;
     } else {
@@ -321,12 +245,18 @@ export class HTMLCampusParser {
       }
     }
   }
-  private static extract_text_from_html(element: Element) {
+  private static extract_text_from_html(element: Element): string {
     let text = '';
     //element may have lots of children with urls and images
     //iterate over all children and extract text only, separate with space
     for (const child of this.extract_children(element)) {
-      text += child + ' ';
+      if (!child.length) {
+        //check for image
+        const img = element.querySelector('img');
+        if (img) text += new URL(img.src, process.env.HOSTNAME).href + ' ';
+      } else {
+        text += child + ' ';
+      }
     }
     return text.replaceAll(/ {2}/g, ' ').trim();
   }

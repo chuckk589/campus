@@ -106,17 +106,16 @@ export class QuizService {
     if (quiz.attemptAnswers.length == 0) {
       //initial call, need to parse quiz data
       quiz.attemptId = quizAttemptId;
-      await this.parseQuizData(cookie, quiz);
+      try {
+        await this.parseQuizData(cookie, quiz);
+      } catch (error) {
+        return { status: HttpStatus.INTERNAL_SERVER_ERROR, error: 'PARSINGERROR' };
+      }
     }
     if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
 
     const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
-    // const progress = quiz.attemptAnswers
-    //   .getItems()
-    //   .sort((a, b) => a.nativeId - b.nativeId)
-    //   .map((item) => item.answered);
     if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
-    // if (attemptAnswer.answered) return { status: HttpStatus.BAD_REQUEST, error: 'ANSWERED' };
     if (attemptAnswer.answer.jsonAnswer) {
       attemptAnswer.answered = true;
       const finished = quiz.attemptAnswers.getItems().every((item) => item.answered);
@@ -134,16 +133,24 @@ export class QuizService {
   }
 
   async parseQuizData(cookie: string, quiz: QuizAttempt) {
-    const quizPage = await this.axiosRetry.request({
-      method: 'GET',
-      url: `https://campus.fa.ru/mod/quiz/attempt.php?attempt=${quiz.attemptId}&cmid=${quiz.cmid}`,
-      headers: { Cookie: cookie },
-    });
+    /* 
+    retries disabled , no sense coz extension will retry anyway
+    in case of expires cookie we need to throw 
+     */
+    const quizPage = await this.axiosRetry.request(
+      {
+        method: 'GET',
+        url: `https://campus.fa.ru/mod/quiz/attempt.php?attempt=${quiz.attemptId}&cmid=${quiz.cmid}`,
+        headers: { Cookie: cookie },
+      },
+      0,
+    );
+
     const dom = new JSDOM(quizPage.data);
     const questions = dom.window.document.querySelectorAll('.qn_buttons a');
     for (const question of questions) {
       const url = question.getAttribute('href');
-      const page = url == '#' ? quizPage : await this.axiosRetry.request({ method: 'GET', url: url, headers: { Cookie: cookie } });
+      const page = url == '#' ? quizPage : await this.axiosRetry.request({ method: 'GET', url: url, headers: { Cookie: cookie } }, 0);
       const questionPage = new JSDOM(page.data);
       const questionData = HTMLCampusParser.get_question_type(questionPage.window.document as any);
       const form = questionPage.window.document.querySelector('.formulation.clearfix');

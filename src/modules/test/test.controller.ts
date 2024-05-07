@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { TestService } from './test.service';
+import { IsNumber } from 'class-validator';
 
 @Controller('test')
 export class TestController {
@@ -15,10 +16,15 @@ export class TestController {
     return this.testService.findAll(query);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.testService.findOne(+id);
-  // }
+  @Get('sample')
+  getSample() {
+    return this.testService.getSample();
+  }
+
+  @Post('sample')
+  getSampleResult(@Body() body: any) {
+    return this.testService.getSampleResult(body);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateTestDto: UpdateTestDto) {

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-custom';
 import { RequestWithVersion } from 'src/types/interfaces';
@@ -17,10 +17,10 @@ export class LocalVersionStrategy extends PassportStrategy(Strategy, 'version') 
       if (validate) {
         return req.user || { version: version };
       } else {
-        throw new UnauthorizedException('Invalid version');
+        throw new HttpException('Version is outdated', 409);
       }
     } else {
-      throw new UnauthorizedException('No version header');
+      throw new HttpException('No version', 400);
     }
   }
 }

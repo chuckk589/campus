@@ -27,7 +27,7 @@ export class AttemptService {
         populate: ['user', 'attemptAnswers.answer'],
         limit: body.endRow - body.startRow,
         offset: body.startRow,
-        orderBy: body.sortModel.map((sort) => ({ [sort.colId]: sort.sort })),
+        orderBy: body.sortModel.filter((sort) => sort.colId in QuizAttempt).map((sort) => ({ [sort.colId]: sort.sort })),
       },
     );
     const attemptsCount = await this.em.count(QuizAttempt, { user: { $ne: null } });
