@@ -28,7 +28,7 @@ export class ConfigSeeder extends Seeder {
     });
     em.create(Config, {
       name: 'OPENAI_API_KEY',
-      value: '',
+      value: 'OPENAI_API_KEY',
       description: 'Ключ OpenAI API',
       category: 'secret',
     });
