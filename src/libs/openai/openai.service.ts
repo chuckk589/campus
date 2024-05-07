@@ -16,7 +16,7 @@ export class OpenAiService {
       apiKey: this.configService.get('OPENAI_API_KEY'),
     };
 
-    this.client = new OpenAI(configuration);
+    // this.client = new OpenAI(configuration);
   }
 
   public async getAIResponse(html: string, question_type: QuestionType): Promise<string> {
