@@ -11,10 +11,11 @@ import { QuestionResult } from '../mikroorm/entities/QuizAttemptAnswer';
 import JSZip from 'jszip';
 import fs from 'fs';
 import { User } from '../mikroorm/entities/User';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class StatusService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private readonly em: EntityManager, private eventEmitter: EventEmitter2) {}
   private secrets = ['ADMIN_PASSCODE', 'OPENAI_API_KEY'];
   async getCurrentVersion(res: Response) {
     const data = await this.em.find(Config, { name: { $in: ['HOSTNAME', 'VERSION'] } });
@@ -96,6 +97,7 @@ export class StatusService {
       updateConfigDto.value && (config.value = updateConfigDto.value);
     }
     updateConfigDto.description && (config.description = updateConfigDto.description);
+    this.eventEmitter.emit('config_updated', config);
     await this.em.persistAndFlush(config);
     return config;
   }

@@ -12,7 +12,7 @@ export class RetrieveAttemptDto {
     this.userName = attempt.user?.name;
     this.createdAt = attempt.createdAt;
     this.status = attempt.attemptStatus;
-    this.answers = attempt.attemptAnswers.getItems().map((attemptAnswer) => new RetrieveAttemptAnswerDto(attemptAnswer));
+    this.answers = attempt.attemptAnswers?.getItems().map((attemptAnswer) => new RetrieveAttemptAnswerDto(attemptAnswer));
     this.path = attempt.path ? attempt.path.split(';') : [];
   }
   createdAt: Date;

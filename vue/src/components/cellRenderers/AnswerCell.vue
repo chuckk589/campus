@@ -75,7 +75,7 @@ export default {
           } else if (qtype == 1) {
             //several dropdowns
             //make array
-            const arr = res.data.split(',');
+            const arr = res.data;
             this.$refs.question
               .querySelectorAll('select')
               .forEach((el, index) => {

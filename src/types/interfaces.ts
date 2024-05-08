@@ -235,7 +235,17 @@ export class HTMLCampusParser {
       return null;
     }
   }
-
+  static convert_to_gpt_payload<T extends QuestionType>(question_type: T, payload: QuestionPayload<T>): string {
+    if (question_type === 0 || question_type === 2) {
+      return `${payload.subject}\n${(payload as QuestionPayload<0 | 2>).options.join('\n')}`;
+    } else if (question_type === 1) {
+      return `${payload.subject}\n${(payload as QuestionPayload<1>).variants
+        .map((variant) => `${variant.text}\n${variant.options.join('\n')}`)
+        .join('\n')}`;
+    } else if (question_type === 3) {
+      return payload.subject;
+    }
+  }
   private static *extract_children(element: Element): Generator<string> {
     if (element.children.length === 0) {
       yield element.textContent;
@@ -261,3 +271,9 @@ export class HTMLCampusParser {
     return text.replaceAll(/ {2}/g, ' ').trim();
   }
 }
+// const supplyTexts = [
+//   'Выбери один или несколько правильных вариантов и верни их индексы через запятую',
+//   'Выбери по одному варианту для каждого вопроса и верни их индексы через запятую',
+//   'Реши задачу и дай ответ индексом без решения',
+//   'Реши задачу и верни ответ одним словом или цифрой без решения',
+// ];

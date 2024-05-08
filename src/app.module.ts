@@ -16,11 +16,13 @@ import { AxiosRetryModule } from './modules/axios-retry/axios-retry.module';
 import ORMOptionsProvider from 'src/configs/mikro-orm.config';
 import { RestrictionModule } from './modules/restriction/restriction.module';
 import { TestModule } from './modules/test/test.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     AppConfigModule.forRootAsync(),
     MikroOrmModule.forRoot(ORMOptionsProvider),
+    EventEmitterModule.forRoot(),
     LoggerModule.forRoot({
       pinoHttp: {
         autoLogging: false,

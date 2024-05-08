@@ -20,7 +20,7 @@ export class AttemptService {
   }
 
   async lazyload(body: IServerSideGetRowsRequest) {
-    const attempts = await this.em.find(
+    const attempts = await this.em.findAndCount(
       QuizAttempt,
       { user: { $ne: null } },
       {
@@ -30,10 +30,10 @@ export class AttemptService {
         orderBy: body.sortModel.filter((sort) => sort.colId in QuizAttempt).map((sort) => ({ [sort.colId]: sort.sort })),
       },
     );
-    const attemptsCount = await this.em.count(QuizAttempt, { user: { $ne: null } });
+    // const attemptsCount = await this.em.count(QuizAttempt, { user: { $ne: null } });
     return {
-      rows: attempts.map((attempt) => new RetrieveAttemptDto(attempt)),
-      lastRow: attemptsCount,
+      rows: attempts[0].map((attempt) => new RetrieveAttemptDto(attempt)),
+      lastRow: attempts[1],
     };
   }
 

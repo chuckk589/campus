@@ -34,8 +34,8 @@ export class AnswersController {
     return this.answersService.update(+id, updateAnswerDto);
   }
 
-  // @Get(':id/ai')
-  // getAiAnswer(@Param('id') id: string) {
-  //   return this.answersService.getAiAnswer(+id);
-  // }
+  @Get(':id/ai')
+  getAiAnswer(@Param('id') id: string) {
+    return this.answersService.getAiAnswer(+id);
+  }
 }
