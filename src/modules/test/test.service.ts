@@ -68,23 +68,27 @@ export class TestService {
   }
 
   async findAll(query: { limit: number; offset: number }) {
+    if (!query.limit || query.offset > 50) query.limit = 50;
     const answers = await this.em.findAndCount(
       QuizAnswer,
       { question_type: { $in: [0, 1, 2, 3] } },
       { limit: query.limit, offset: query.offset },
     );
     const questionTypes = ['checkbox', 'select', 'radio', 'input'];
-    return answers[0].map((answer) => {
-      const question = HTMLCampusParser.parse_question_data(answer.html, answer.question_type as QuestionType);
-      return {
-        id: answer.id,
-        type: {
-          id: answer.question_type,
-          name: questionTypes[answer.question_type],
-        },
-        question: question,
-        answer: HTMLCampusParser.parse_question_answers(question, answer.question_type as QuestionType, answer.jsonAnswer),
-      };
-    });
+    return {
+      rows: answers[0].map((answer) => {
+        const question = HTMLCampusParser.parse_question_data(answer.html, answer.question_type as QuestionType);
+        return {
+          id: answer.id,
+          type: {
+            id: answer.question_type,
+            name: questionTypes[answer.question_type],
+          },
+          question: question,
+          answer: HTMLCampusParser.parse_question_answers(question, answer.question_type as QuestionType, answer.jsonAnswer),
+        };
+      }),
+      lastRow: answers[1],
+    };
   }
 }
