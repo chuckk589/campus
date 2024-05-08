@@ -74,18 +74,17 @@ export class TestService {
       { limit: query.limit, offset: query.offset },
     );
     const questionTypes = ['checkbox', 'select', 'radio', 'input'];
-    return answers[0]
-      .filter((answer) => {
-        return [1].includes(answer.question_type);
-      })
-      .map((answer) => {
-        const question = HTMLCampusParser.parse_question_data(answer.html, answer.question_type as QuestionType);
-        return {
-          id: answer.id,
-          type: answer.question_type,
-          question: question,
-          answer: HTMLCampusParser.parse_question_answers(question, answer.question_type as QuestionType, answer.jsonAnswer),
-        };
-      });
+    return answers[0].map((answer) => {
+      const question = HTMLCampusParser.parse_question_data(answer.html, answer.question_type as QuestionType);
+      return {
+        id: answer.id,
+        type: {
+          id: answer.question_type,
+          name: questionTypes[answer.question_type],
+        },
+        question: question,
+        answer: HTMLCampusParser.parse_question_answers(question, answer.question_type as QuestionType, answer.jsonAnswer),
+      };
+    });
   }
 }

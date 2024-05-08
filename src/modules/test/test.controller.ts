@@ -16,15 +16,15 @@ export class TestController {
     return this.testService.findAll(query);
   }
 
-  @Get('sample')
-  getSample() {
-    return this.testService.getSample();
-  }
+  // @Get('sample')
+  // getSample() {
+  //   return this.testService.getSample();
+  // }
 
-  @Post('sample')
-  getSampleResult(@Body() body: any) {
-    return this.testService.getSampleResult(body);
-  }
+  // @Post('sample')
+  // getSampleResult(@Body() body: any) {
+  //   return this.testService.getSampleResult(body);
+  // }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateTestDto: UpdateTestDto) {
