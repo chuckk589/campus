@@ -14,8 +14,7 @@ export class OpenAiService {
 
   constructor(private readonly configService: AppConfigService, private readonly em: EntityManager, private eventEmitter: EventEmitter2) {
     const configuration = {
-      apiKey: this.configService.get('OPENAI_API_KEY'),
-      // apiKey: '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',
+      apiKey: this.configService.get('OPENAI_API_KEY') || 'OPENAI_API_KEY',
     };
 
     this.client = new OpenAI(configuration);
