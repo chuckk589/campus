@@ -51,7 +51,7 @@ export class QuizController {
     if (session) {
       return this.quizService.getQuizAnswer(session, req.user.id, page, attempt);
     } else {
-      throw new HttpException('No session cookie', 400);
+      throw new HttpException('No session cookie', 401);
     }
   }
 }

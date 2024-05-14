@@ -3,7 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AppConfigService } from '../app-config/app-config.service';
 import { Code, CodeStatus } from '../mikroorm/entities/Code';
-import { AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
+import { AttemptParsingState, AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
 import { User } from '../mikroorm/entities/User';
 import { CreateQuizDto, CreateQuizDtoUser } from './dto/create-quiz.dto';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
@@ -102,14 +102,14 @@ export class QuizService {
 
   async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, quizAttemptId: string) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +quizId }, { populate: ['attemptAnswers.answer'] });
+    if (quiz.parsingState == AttemptParsingState.IN_PROGRESS) return { status: HttpStatus.BAD_REQUEST, error: 'PARSINGINPROGRESS' };
     if (!quiz.cmid || !quiz.user) return { status: HttpStatus.BAD_REQUEST, error: 'NOTINITIATED' };
-    if (quiz.attemptAnswers.length == 0) {
-      //initial call, need to parse quiz data
+    if (quiz.attemptAnswers.length == 0 || quiz.attemptAnswers.length !== quiz.questionAmount) {
       quiz.attemptId = quizAttemptId;
       try {
         await this.parseQuizData(cookie, quiz);
       } catch (error) {
-        return { status: HttpStatus.INTERNAL_SERVER_ERROR, error: 'PARSINGERROR' };
+        return { status: HttpStatus.BAD_REQUEST, error: 'PARSINGERROR' };
       }
     }
     if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
@@ -131,54 +131,73 @@ export class QuizService {
       return { status: HttpStatus.NO_CONTENT, error: 'NOANSWER' };
     }
   }
-
+  //https://campus.fa.ru/mod/quiz/view.php?id=483595
   async parseQuizData(cookie: string, quiz: QuizAttempt) {
-    /* 
+    try {
+      await this.switchQuizState(quiz, AttemptParsingState.IN_PROGRESS);
+      /* 
     retries disabled , no sense coz extension will retry anyway
     in case of expires cookie we need to throw 
      */
-    const quizPage = await this.axiosRetry.request(
-      {
-        method: 'GET',
-        url: `https://campus.fa.ru/mod/quiz/attempt.php?attempt=${quiz.attemptId}&cmid=${quiz.cmid}`,
-        headers: { Cookie: cookie },
-      },
-      0,
-    );
-
-    const dom = new JSDOM(quizPage.data);
-    const questions = dom.window.document.querySelectorAll('.qn_buttons a');
-    for (const question of questions) {
-      const url = question.getAttribute('href');
-      const page = url == '#' ? quizPage : await this.axiosRetry.request({ method: 'GET', url: url, headers: { Cookie: cookie } }, 0);
-      const questionPage = new JSDOM(page.data);
-      const questionData = HTMLCampusParser.get_question_type(questionPage.window.document as any);
-      const form = questionPage.window.document.querySelector('.formulation.clearfix');
-      let existingAnswer = await this.em.findOne(QuizAnswer, { question_hash: questionData.question_idhash });
-      if (!existingAnswer || existingAnswer.question_type == -1) {
-        await this.loadPictures(cookie, form);
-        if (!existingAnswer) {
-          existingAnswer = this.em.create(QuizAnswer, {
-            question_hash: questionData.question_idhash,
-            question_type: questionData.resultype,
-            html: form.innerHTML,
-          });
-        } else if (existingAnswer.question_type == -1) {
-          existingAnswer.question_type = questionData.resultype;
-          existingAnswer.html = form.innerHTML;
-        }
-      }
-      quiz.attemptAnswers.add(
-        this.em.create(QuizAttemptAnswer, {
-          attempt: quiz,
-          answer: existingAnswer,
-          nativeId: url == '#' ? 0 : parseInt(url.split('page=').pop()),
-        }),
+      const quizPage = await this.axiosRetry.request(
+        {
+          method: 'GET',
+          url: `https://campus.fa.ru/mod/quiz/attempt.php?attempt=${quiz.attemptId}&cmid=${quiz.cmid}`,
+          headers: { Cookie: cookie },
+        },
+        0,
       );
+
+      const dom = new JSDOM(quizPage.data);
+      const questions = dom.window.document.querySelectorAll('.qn_buttons a');
+      const existingItems = quiz.attemptAnswers.getItems();
+
       quiz.questionAmount = questions.length;
       quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
+
+      for (const question of questions) {
+        const url = question.getAttribute('href');
+        const nativeId = parseInt(url.split('page=').pop()) || 0;
+        if (existingItems.find((item) => item.nativeId == nativeId)) continue;
+        const page = url == '#' ? quizPage : await this.axiosRetry.request({ method: 'GET', url: url, headers: { Cookie: cookie } }, 0);
+        const questionPage = new JSDOM(page.data);
+        const questionData = HTMLCampusParser.get_question_type(questionPage.window.document as any);
+        const form = questionPage.window.document.querySelector('.formulation.clearfix');
+        let existingAnswer = await this.em.findOne(QuizAnswer, { question_hash: questionData.question_idhash });
+        if (!existingAnswer || existingAnswer.question_type == -1) {
+          await this.loadPictures(cookie, form);
+          if (!existingAnswer) {
+            existingAnswer = this.em.create(QuizAnswer, {
+              question_hash: questionData.question_idhash,
+              question_type: questionData.resultype,
+              html: form.innerHTML,
+            });
+          } else if (existingAnswer.question_type == -1) {
+            existingAnswer.question_type = questionData.resultype;
+            existingAnswer.html = form.innerHTML;
+          }
+        }
+        quiz.attemptAnswers.add(
+          this.em.create(QuizAttemptAnswer, {
+            attempt: quiz,
+            answer: existingAnswer,
+            nativeId,
+          }),
+        );
+        await this.em.persistAndFlush(quiz);
+        // quiz.questionAmount = questions.length;
+        // quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
+      }
+      quiz.parsingState = AttemptParsingState.FINISHED;
+      await wrap(quiz).init();
+    } catch (error) {
+      await this.switchQuizState(quiz, AttemptParsingState.ABORTED);
+      throw new Error('Parsing error');
     }
-    await wrap(quiz).init();
+  }
+  async switchQuizState(quiz: QuizAttempt, state: AttemptParsingState) {
+    quiz.parsingState = state;
+    await this.em.persistAndFlush(quiz);
   }
   async loadPictures(cookie: string, quizForm: Element) {
     const imgPaths = quizForm.querySelectorAll('img[src^="https://campus.fa.ru/pluginfile.php"');

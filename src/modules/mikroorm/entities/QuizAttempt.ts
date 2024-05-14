@@ -12,6 +12,13 @@ export enum AttemptStatus {
   INITIATED = 'initiated',
 }
 
+export enum AttemptParsingState {
+  IN_PROGRESS = 'in_progress',
+  FINISHED = 'finished',
+  ABORTED = 'aborted',
+  DEFAULT = 'default',
+}
+
 @Entity()
 export class QuizAttempt extends CustomBaseEntity {
   @PrimaryKey()
@@ -47,4 +54,7 @@ export class QuizAttempt extends CustomBaseEntity {
     orphanRemoval: true,
   })
   result?: QuizResult;
+
+  @Enum({ items: () => AttemptParsingState, default: AttemptParsingState.DEFAULT })
+  parsingState!: AttemptParsingState;
 }

@@ -27,10 +27,11 @@ export class AttemptService {
         populate: ['user', 'attemptAnswers.answer'],
         limit: body.endRow - body.startRow,
         offset: body.startRow,
-        orderBy: body.sortModel.filter((sort) => sort.colId in QuizAttempt).map((sort) => ({ [sort.colId]: sort.sort })),
+        orderBy: body.sortModel
+          .filter((sort) => ['id', 'attemptId', 'questionAmount', 'attemptStatus', 'cmid', 'path', 'parsingState'].includes(sort.colId))
+          .map((sort) => ({ [sort.colId]: sort.sort })),
       },
     );
-    // const attemptsCount = await this.em.count(QuizAttempt, { user: { $ne: null } });
     return {
       rows: attempts[0].map((attempt) => new RetrieveAttemptDto(attempt)),
       lastRow: attempts[1],

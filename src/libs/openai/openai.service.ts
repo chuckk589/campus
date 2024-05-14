@@ -18,7 +18,7 @@ export class OpenAiService {
     };
 
     this.client = new OpenAI(configuration);
-    eventEmitter.on('config_updated', async (config: Config) => {
+    this.eventEmitter.on('config_updated', async (config: Config) => {
       if (config.name === 'OPENAI_API_KEY') {
         this.client.apiKey = config.value;
       }

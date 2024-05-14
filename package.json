@@ -21,7 +21,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build&&yarn run vite",
     "vite": "cd vue&&yarn run build",
-    "start:dev": "SET NODE_ENV=dev&&nodemon src/main.ts",
+    "start:dev": "SET NODE_ENV=dev&&nest start --watch",
     "start:prod": "node dist/main",
     "test": "jest",
     "test:e2e": "jest --config ./test/jest-e2e.json",

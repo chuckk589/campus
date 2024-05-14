@@ -20,7 +20,7 @@ export class LocalVersionStrategy extends PassportStrategy(Strategy, 'version') 
         throw new HttpException('Version is outdated', 409);
       }
     } else {
-      throw new HttpException('No version', 400);
+      throw new HttpException('No version', 401);
     }
   }
 }
