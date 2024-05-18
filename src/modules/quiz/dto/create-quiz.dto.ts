@@ -16,17 +16,17 @@ export class CreateQuizDto {
   @IsString({ message: 'Отсутствует обязательный параметр - код' })
   code!: string;
 
-  @IsString()
-  @IsOptional()
-  cmid?: string;
+  // @IsString()
+  // @IsOptional()
+  // cmid?: string;
 
-  @IsString()
-  @IsOptional()
-  path?: string;
+  // @IsString()
+  // @IsOptional()
+  // path?: string;
 
-  @ValidateNested()
-  @IsObject()
-  @IsOptional()
-  @Type(() => CreateQuizDtoUser)
-  user?: CreateQuizDtoUser;
+  // @ValidateNested()
+  // @IsObject()
+  // @IsOptional()
+  // @Type(() => CreateQuizDtoUser)
+  // user?: CreateQuizDtoUser;
 }

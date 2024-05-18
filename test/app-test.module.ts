@@ -16,6 +16,7 @@ import { StatusModule } from 'src/modules/status/status.module';
 import { TestModule } from 'src/modules/test/test.module';
 import { UserModule } from 'src/modules/user/user.module';
 import MikroORMOptions from './utils/mikro-orm.test.config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import MikroORMOptions from './utils/mikro-orm.test.config';
     LoggerModule.forRoot({ pinoHttp: { level: 'silent' } }),
     // ServeStaticModule.forRoot({ rootPath: join(__dirname, './', 'public/') }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', '/dist/public/') }),
+    EventEmitterModule.forRoot(),
     UserModule,
     AuthModule,
     StatusModule,

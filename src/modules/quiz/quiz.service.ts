@@ -57,7 +57,7 @@ export class QuizService {
     quiz.attemptStatus = AttemptStatus.FINISHED;
     quiz.result = new QuizResult(finishQuizDto.summaryData);
     await this.em.persistAndFlush(quiz);
-    return quiz;
+    return new QuizResult(finishQuizDto.summaryData);
   }
   async createQuiz(createQuizDto: CreateQuizDto) {
     const code = await this.em.findOne(Code, { value: createQuizDto.code });
@@ -65,12 +65,12 @@ export class QuizService {
       if (code.status !== CodeStatus.ACTIVE) {
         throw new HttpException('Код уже активирован', 400);
       } else {
-        const existingUser = await this.findOrCreateUser(createQuizDto.user);
+        // const existingUser = await this.findOrCreateUser(createQuizDto.user);
         const newQuizAttempt = this.em.create(QuizAttempt, {
           code: code,
-          user: existingUser,
-          cmid: createQuizDto.cmid,
-          path: createQuizDto.path,
+          // user: existingUser,
+          // cmid: createQuizDto.cmid,
+          // path: createQuizDto.path,
         });
         code.status = CodeStatus.USED;
         await this.em.persistAndFlush([newQuizAttempt, code]);

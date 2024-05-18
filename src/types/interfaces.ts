@@ -63,6 +63,15 @@ export type ParsedQuizAnswer<T extends QuestionType> = {
     name: QuizQuestionType<T>;
   };
 };
+/*
+ * proctoring test
+ * login - 217816
+ * pass - YwWc9463
+ * https://campus.fa.ru/course/view.php?id=29887
+ */
+//https://campus.fa.ru/mod/quiz/view.php?id=186319 checkbox images
+//https://campus.fa.ru/mod/quiz/attempt.php?attempt=1020486&cmid=483589&page=2 select example
+
 export class HTMLCampusParser {
   //legacy, dont touch
   private static bde_hash(text: string) {
