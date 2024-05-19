@@ -71,7 +71,7 @@ export type ParsedQuizAnswer<T extends QuestionType> = {
  */
 //https://campus.fa.ru/mod/quiz/view.php?id=186319 checkbox images
 //https://campus.fa.ru/mod/quiz/attempt.php?attempt=1020486&cmid=483589&page=2 select example
-
+//https://campus.fa.ru/mod/quiz/attempt.php?attempt=1025831&cmid=483591&page=16 radio example with image in answers
 export class HTMLCampusParser {
   //legacy, dont touch
   private static bde_hash(text: string) {

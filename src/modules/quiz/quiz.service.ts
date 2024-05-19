@@ -185,8 +185,6 @@ export class QuizService {
           }),
         );
         await this.em.persistAndFlush(quiz);
-        // quiz.questionAmount = questions.length;
-        // quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
       }
       quiz.parsingState = AttemptParsingState.FINISHED;
       await wrap(quiz).init();
@@ -223,6 +221,7 @@ export class QuizService {
         })
         .catch((err) => {
           this.logger.error(err);
+          throw new Error('Image loading error');
         });
     }
   }

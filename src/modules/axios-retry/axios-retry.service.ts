@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { AxiosRequestConfig, Method, AxiosResponse } from 'axios';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import https from 'https';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class AxiosRetryService {
@@ -24,8 +25,12 @@ export class AxiosRetryService {
           ...options,
         })
         .then((response) => resolve(response))
-        .catch((error) => {
-          this.logger.error(`Request failed with status code ${error?.response?.status}, retries left: ${retries}, url: ${options.url}`);
+        .catch((error: AxiosError) => {
+          this.logger.error(
+            `Request failed code: ${error?.response?.status}, message: ${
+              error.message
+            }, retries left: ${retries}, options: ${JSON.stringify(options)}`,
+          );
           if (retries > 0) {
             setTimeout(() => {
               return this.request(options, retries - 1);
