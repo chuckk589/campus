@@ -18,7 +18,7 @@
     ]
   },
   "scripts": {
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf ../campus-chrome/build && rimraf ./src/public/build.zip && cd ../campus-chrome && yarn run build && cd ../campus && powershell Compress-Archive -Path ../campus-chrome/build/* -DestinationPath ./src/public/build.zip",
     "build": "nest build&&yarn run vite",
     "vite": "cd vue&&yarn run build",
     "start:dev": "SET NODE_ENV=dev&&nest start --watch",
