@@ -9,7 +9,6 @@ import { ClearDB } from './utils/helpers/db';
 import jsonwebtoken from 'jsonwebtoken';
 import { RetrieveAttemptDto } from 'src/modules/attempt/dto/retrieve-attempt.dto';
 import { AttemptParsingState, AttemptStatus, QuizAttempt } from 'src/modules/mikroorm/entities/QuizAttempt';
-import { questions } from './utils/helpers/questions';
 import { QuizAttemptAnswer } from 'src/modules/mikroorm/entities/QuizAttemptAnswer';
 import { initDB } from './utils/helpers/initDB';
 import * as seeders from './utils/seeders';
