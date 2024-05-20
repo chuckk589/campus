@@ -4,7 +4,7 @@ import { AxiosRequestConfig, Method, AxiosResponse } from 'axios';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import https from 'https';
 import { AxiosError } from 'axios';
-
+import fs from 'fs';
 @Injectable()
 export class AxiosRetryService {
   constructor(
@@ -36,6 +36,12 @@ export class AxiosRetryService {
               return this.request(options, retries - 1);
             }, 3000);
           } else {
+            const path = `./dist/public/files/logs/`;
+            const filename = `${new Date().toUTCString().replaceAll(/ |, |:/g, '_')}_${options.url.split('?').pop()}.txt`;
+            if (!fs.existsSync(path)) {
+              fs.mkdirSync(path, { recursive: true });
+            }
+            fs.writeFileSync(path + filename, JSON.stringify(error?.response?.data));
             reject(error);
           }
         });
