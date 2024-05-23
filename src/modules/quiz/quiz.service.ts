@@ -29,8 +29,8 @@ export class QuizService {
     private readonly axiosRetry: AxiosRetryService,
   ) {}
 
-  async updateQuiz(id: number, updateQuizDto: UpdateQuizDto) {
-    const quiz = await this.em.findOneOrFail(QuizAttempt, { id: +id });
+  async updateQuiz(maybeQuiz: number | QuizAttempt, updateQuizDto: UpdateQuizDto) {
+    const quiz = typeof maybeQuiz == 'number' ? await this.em.findOneOrFail(QuizAttempt, { id: maybeQuiz }) : maybeQuiz;
     if (quiz.user) return {}; //already updated
     const existingUser = await this.findOrCreateUser(updateQuizDto.user);
     quiz.cmid = updateQuizDto.cmid;
@@ -38,10 +38,10 @@ export class QuizService {
     quiz.path = updateQuizDto.path;
     await this.em.persistAndFlush(quiz);
     const token = this.jwtService.sign(
-      { id: quiz.id, cmid: quiz.cmid, path: quiz.path.split(';').pop() },
+      { id: quiz.id, cmid: quiz.cmid, path: updateQuizDto.name },
       { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '6h' },
     );
-    return { token };
+    return token;
   }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
@@ -100,10 +100,14 @@ export class QuizService {
     }
   }
 
-  async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, quizAttemptId: string) {
+  async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, quizAttemptId: string, updateQuizDto: UpdateQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +quizId }, { populate: ['attemptAnswers.answer'] });
     if (quiz.parsingState == AttemptParsingState.IN_PROGRESS) return { status: HttpStatus.BAD_REQUEST, error: 'PARSINGINPROGRESS' };
-    if (!quiz.cmid || !quiz.user) return { status: HttpStatus.BAD_REQUEST, error: 'NOTINITIATED' };
+    if (!quiz.cmid || !quiz.user) {
+      //update required, first call probably
+      const token = await this.updateQuiz(+quizId, updateQuizDto);
+      return { status: HttpStatus.ACCEPTED, token };
+    }
     if (quiz.attemptAnswers.length == 0 || quiz.attemptAnswers.length !== quiz.questionAmount) {
       quiz.attemptId = quizAttemptId;
       try {
@@ -220,7 +224,6 @@ export class QuizService {
           }
         })
         .catch((err) => {
-          this.logger.error(err);
           throw new Error('Image loading error');
         });
     }

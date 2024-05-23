@@ -13,4 +13,7 @@ export class UpdateQuizDto {
   @IsObject()
   @Type(() => CreateQuizDtoUser)
   user?: CreateQuizDtoUser;
+
+  @IsString()
+  name?: string;
 }

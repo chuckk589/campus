@@ -28,11 +28,11 @@ export class QuizController {
     return { status: 'ok' };
   }
 
-  @Put()
-  @UseGuards(AuthVersionGuard, JwtAuthChromeGuard, UserStatusGuard)
-  updateQuiz(@Req() req: QuizAnswerRequest, @Body() updateQuizDto: UpdateQuizDto) {
-    return this.quizService.updateQuiz(+req.user.id, updateQuizDto);
-  }
+  // @Put()
+  // @UseGuards(AuthVersionGuard, JwtAuthChromeGuard, UserStatusGuard)
+  // updateQuiz(@Req() req: QuizAnswerRequest, @Body() updateQuizDto: UpdateQuizDto) {
+  //   return this.quizService.updateQuiz(+req.user.id, updateQuizDto);
+  // }
 
   @Post('finish')
   @UseGuards(AuthVersionGuard, JwtAuthChromeGuard, UserStatusGuard)
@@ -47,9 +47,10 @@ export class QuizController {
     @Param('page') page: string,
     @Param('attempt') attempt: string,
     @Headers('Session') session: string,
+    @Body() updateQuizDto: UpdateQuizDto,
   ) {
     if (session) {
-      return this.quizService.getQuizAnswer(session, req.user.id, page, attempt);
+      return this.quizService.getQuizAnswer(session, req.user.id, page, attempt, updateQuizDto);
     } else {
       throw new HttpException('No session cookie', 401);
     }
