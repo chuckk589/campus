@@ -24,7 +24,7 @@ export class AxiosRetryService {
           data: options.data,
           ...options,
         })
-        .then((response) => resolve(response))
+        .then(resolve)
         .catch((error: AxiosError) => {
           this.logger.error(
             `Request failed code: ${error?.response?.status}, message: ${
@@ -33,15 +33,11 @@ export class AxiosRetryService {
           );
           if (retries > 0) {
             setTimeout(() => {
-              return this.request(options, retries - 1);
+              this.request(options, retries - 1)
+                .then(resolve)
+                .catch(reject);
             }, 3000);
           } else {
-            const path = `./dist/public/files/logs/`;
-            const filename = `${new Date().toUTCString().replaceAll(/ |, |:/g, '_')}_${options.url.split('?').pop()}.txt`;
-            if (!fs.existsSync(path)) {
-              fs.mkdirSync(path, { recursive: true });
-            }
-            fs.writeFileSync(path + filename, JSON.stringify(error?.response?.data));
             reject(error);
           }
         });
