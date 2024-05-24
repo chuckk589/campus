@@ -25,12 +25,9 @@ export class StatusService {
     fs.readFile('./dist/public/build.zip', function (err, data) {
       if (err) throw err;
       JSZip.loadAsync(data).then(async function (zip: JSZip & { files: { [key: string]: JSZip.JSZipObject & { _data: any } } }) {
-        const chunkNames = Object.keys(zip.files).filter((item) => item.match(/build\/assets\/chunk-.*?\.js/));
-        const smallestFileName = chunkNames.reduce((prev, curr) =>
-          zip.files[prev]._data.uncompressedSize < zip.files[curr]._data.uncompressedSize ? prev : curr,
-        );
+        const cnstFileName = Object.keys(zip.files).find((filename) => filename.match(/.*constants\.js/));
         const json = `const t="${version.value}",o="${hostname.value}";export{o as H,t as V};`;
-        zip.file(smallestFileName, json).generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(res);
+        zip.file(cnstFileName, json).generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(res);
       });
     });
   }
