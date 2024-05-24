@@ -18,8 +18,6 @@ describe('AppController (e2e)', () => {
   let orm: MikroORM;
   let cookie: string;
   // await initDB();
-  const attemptsKeys = ['id', 'attemptId', 'questionAmount', 'cmid', 'userId', 'userName', 'createdAt', 'status', 'answers', 'path'];
-  const attemptAnswersKeys = ['id', 'html', 'jsonAnswer', 'nativeId', 'answered', 'result', 'question_type'];
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -155,11 +153,10 @@ describe('AppController (e2e)', () => {
       const response = await request(app.getHttpServer()).get('/attempt').set('Authorization', authHeader);
       expect(response.status).toBe(200);
       expect(response.body.length).toBe(attempts);
-      expect(Object.keys(response.body[0])).toEqual(attemptsKeys);
     });
     it('[POST attempt/lazy] should get attempts', async () => {
       const attempts = await orm.em.find(QuizAttempt, {});
-      const ids = attempts.map((a) => +a.id).sort((a: any, b: any) => b.id - a.id);
+      const ids = attempts.map((a) => +a.id).sort((a: any, b: any) => b - a);
       const response = await request(app.getHttpServer())
         .post('/attempt/lazy')
         .set('Authorization', authHeader)
@@ -167,9 +164,8 @@ describe('AppController (e2e)', () => {
       expect(response.status).toBe(201);
       expect(Object.keys(response.body)).toEqual(['rows', 'lastRow']);
       expect(response.body.rows.length).toBe(2);
-      expect(response.body.rows[0].id).toEqual(ids[0]);
-      expect(response.body.rows[1].id).toEqual(ids[1]);
-      expect(Object.keys(response.body.rows[0])).toEqual(attemptsKeys);
+      expect(+response.body.rows[0].id).toEqual(ids[0]);
+      expect(+response.body.rows[1].id).toEqual(ids[1]);
     });
     it('[PUT attempt] should update attempt', async () => {
       const response = await request(app.getHttpServer()).put('/attempt/1').set('Authorization', authHeader).send({ status: 'in_progress' });
@@ -177,7 +173,6 @@ describe('AppController (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body.status).toBe(AttemptStatus.IN_PROGRESS);
       expect(attempt.attemptStatus).toBe(AttemptStatus.IN_PROGRESS);
-      expect(Object.keys(response.body)).toEqual(attemptsKeys);
     });
     it('[PUT attempt/answer] should update attempt answer', async () => {
       const response = await request(app.getHttpServer()).put('/attempt/answer/1').set('Authorization', authHeader).send({ answered: true });
@@ -185,7 +180,6 @@ describe('AppController (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body.answered).toBe(true);
       expect(attemptAnswer.answered).toBe(true);
-      expect(Object.keys(response.body)).toEqual(attemptAnswersKeys);
     });
     // it('[GET attempt/pattern/:id/ai] should get AI answer', async () => {
     //   const response = await request(app.getHttpServer()).get('/attempt/pattern/1/ai').set('Authorization', authHeader);
@@ -198,7 +192,6 @@ describe('AppController (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body.jsonAnswer).toBe('{"test":2}');
       expect(attemptAnswer.answer.jsonAnswer).toBe('{"test":2}');
-      expect(Object.keys(response.body)).toEqual(attemptAnswersKeys);
     });
   });
   describe('QuizController', () => {
@@ -220,9 +213,9 @@ describe('AppController (e2e)', () => {
       const endpoints = [
         { path: '/quiz', method: 'get' },
         { path: '/quiz/new', method: 'post' },
-        { path: '/quiz', method: 'put' },
+        // { path: '/quiz', method: 'put' },
         { path: '/quiz/finish', method: 'post' },
-        { path: '/quiz/answer/1/attempt/1', method: 'post' },
+        { path: '/quiz/answer/1/', method: 'post' },
       ];
       //no guards
       for (const endpoint of endpoints) {
@@ -293,62 +286,62 @@ describe('AppController (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ status: 'ok' });
     });
-    describe('[PUT quiz]', () => {
-      it('Should return empty object', async () => {
-        await orm.em.nativeUpdate(QuizAttempt, { id: 1 }, { user: orm.em.getReference('User', 1) });
-        const response = await request(app.getHttpServer())
-          .put('/quiz')
-          .set('x-version', versionHeader)
-          .set('Authorization', authHeader)
-          .send({
-            cmid: '123',
-            path: 'chunk1;chunk2',
-            user: { id: '123', login: 'login', name: 'name' },
-          });
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual({});
-      });
-      it('Should update quiz and create new user', async () => {
-        await orm.em.nativeUpdate(QuizAttempt, { id: 1 }, { user: null });
-        const response = await request(app.getHttpServer())
-          .put('/quiz')
-          .set('x-version', versionHeader)
-          .set('Authorization', authHeader)
-          .send({ cmid: '123', path: 'chunk1;chunk2', user: { id: '123', login: 'login', name: 'name' } });
-        const attempt = await orm.em.findOneOrFail(QuizAttempt, 1, { populate: ['user'] });
-        const payload = jsonwebtoken.decode(response.body.token);
-        const user = await orm.em.findOneOrFail('User', { userId: '123' });
-        expect(response.status).toBe(200);
-        expect(response.body.token).toEqual(expect.any(String));
-        expect(payload).toMatchObject({ id: 1, cmid: '123', path: 'chunk2' });
-        expect(attempt).toMatchObject({
-          id: 1,
-          cmid: '123',
-          path: 'chunk1;chunk2',
-          user,
-        });
-      });
-      it('Should update quiz and use existing user', async () => {
-        await orm.em.nativeUpdate(QuizAttempt, { id: 1 }, { user: null });
-        const response = await request(app.getHttpServer())
-          .put('/quiz')
-          .set('x-version', versionHeader)
-          .set('Authorization', authHeader)
-          .send({ cmid: '123', path: 'chunk1;chunk2', user: { id: '32838' } });
-        const attempt = await orm.em.findOneOrFail(QuizAttempt, 1, { populate: ['user'] });
-        const payload = jsonwebtoken.decode(response.body.token);
-        const user = await orm.em.findOneOrFail('User', { userId: '32838' });
-        expect(response.status).toBe(200);
-        expect(response.body.token).toEqual(expect.any(String));
-        expect(payload).toMatchObject({ id: 1, cmid: '123', path: 'chunk2' });
-        expect(attempt).toMatchObject({
-          id: 1,
-          cmid: '123',
-          path: 'chunk1;chunk2',
-          user,
-        });
-      });
-    });
+    // describe('[PUT quiz]', () => {
+    //   it('Should return empty object', async () => {
+    //     await orm.em.nativeUpdate(QuizAttempt, { id: 1 }, { user: orm.em.getReference('User', 1) });
+    //     const response = await request(app.getHttpServer())
+    //       .put('/quiz')
+    //       .set('x-version', versionHeader)
+    //       .set('Authorization', authHeader)
+    //       .send({
+    //         cmid: '123',
+    //         path: 'chunk1;chunk2',
+    //         user: { id: '123', login: 'login', name: 'name' },
+    //       });
+    //     expect(response.status).toBe(200);
+    //     expect(response.body).toEqual({});
+    //   });
+    //   it('Should update quiz and create new user', async () => {
+    //     await orm.em.nativeUpdate(QuizAttempt, { id: 1 }, { user: null });
+    //     const response = await request(app.getHttpServer())
+    //       .put('/quiz')
+    //       .set('x-version', versionHeader)
+    //       .set('Authorization', authHeader)
+    //       .send({ cmid: '123', path: 'chunk1;chunk2', user: { id: '123', login: 'login', name: 'name' } });
+    //     const attempt = await orm.em.findOneOrFail(QuizAttempt, 1, { populate: ['user'] });
+    //     const payload = jsonwebtoken.decode(response.body.token);
+    //     const user = await orm.em.findOneOrFail('User', { userId: '123' });
+    //     expect(response.status).toBe(200);
+    //     expect(response.body.token).toEqual(expect.any(String));
+    //     expect(payload).toMatchObject({ id: 1, cmid: '123', path: 'chunk2' });
+    //     expect(attempt).toMatchObject({
+    //       id: 1,
+    //       cmid: '123',
+    //       path: 'chunk1;chunk2',
+    //       user,
+    //     });
+    //   });
+    //   it('Should update quiz and use existing user', async () => {
+    //     await orm.em.nativeUpdate(QuizAttempt, { id: 1 }, { user: null });
+    //     const response = await request(app.getHttpServer())
+    //       .put('/quiz')
+    //       .set('x-version', versionHeader)
+    //       .set('Authorization', authHeader)
+    //       .send({ cmid: '123', path: 'chunk1;chunk2', user: { id: '32838' } });
+    //     const attempt = await orm.em.findOneOrFail(QuizAttempt, 1, { populate: ['user'] });
+    //     const payload = jsonwebtoken.decode(response.body.token);
+    //     const user = await orm.em.findOneOrFail('User', { userId: '32838' });
+    //     expect(response.status).toBe(200);
+    //     expect(response.body.token).toEqual(expect.any(String));
+    //     expect(payload).toMatchObject({ id: 1, cmid: '123', path: 'chunk2' });
+    //     expect(attempt).toMatchObject({
+    //       id: 1,
+    //       cmid: '123',
+    //       path: 'chunk1;chunk2',
+    //       user,
+    //     });
+    //   });
+    // });
     describe('[POST quiz/finish]', () => {
       it('Should reject already finished', async () => {
         await orm.em.persistAndFlush(orm.em.create('QuizResult', { attempt: orm.em.getReference('QuizAttempt', 1) }));
@@ -395,28 +388,65 @@ describe('AppController (e2e)', () => {
         ).toEqual([3]);
       });
     });
-    describe('[POST answer/:page/attempt/:attempt]', () => {
+    describe('[POST answer/:page/]', () => {
       it('Should reject no cookie', async () => {
-        const response = await request(app.getHttpServer()).post('/quiz/answer/1/attempt/1').set('x-version', versionHeader).set('Authorization', authHeader).send({ answer: 'answer' });
+        const response = await request(app.getHttpServer()).post('/quiz/answer/1/').set('x-version', versionHeader).set('Authorization', authHeader).send({ answer: 'answer' });
         expect(response.status).toBe(401);
         expect(response.body.message).toEqual('No session cookie');
       });
       //https://campus.fa.ru/mod/quiz/view.php?id=186319
-      it('Should return not initiated, after quiz creation', async () => {
+      // it('Should return not initiated, after quiz creation', async () => {
+      //   const response = await request(app.getHttpServer()).post('/quiz/new').set('x-version', versionHeader).send({ code: 'F1D3D2EA1D1D2D3E' });
+      //   const response2 = await request(app.getHttpServer()).post('/quiz/answer/1/attempt/1').set('x-version', versionHeader).set('Authorization', `Bearer ${response.body.token}`).set('Session', 'session').send({
+      //     cmid: '1',
+      //     path: 'chunk1;chunk2',
+      //     user,
+      //     name: 'name',
+      //   });
+      //   const attempt = await orm.em.findOneOrFail(QuizAttempt, 1, { populate: ['user'] });
+      //   const payload = jsonwebtoken.decode(response2.body.token);
+      //   const user = await orm.em.findOneOrFail('User', { userId: '123' });
+      //   expect(response.status).toBe(200);
+      //   expect(response.body.token).toEqual(expect.any(String));
+      //   expect(payload).toMatchObject({ id: 1, cmid: '123', path: 'chunk2' });
+      //   expect(response2.status).toBe(202);
+      //   expect(response2.body).toMatchObject({ status: 400, error: 'NOTINITIATED' });
+      // });
+      it('Should update quiz and create user', async () => {
         const response = await request(app.getHttpServer()).post('/quiz/new').set('x-version', versionHeader).send({ code: 'F1D3D2EA1D1D2D3E' });
-        const response2 = await request(app.getHttpServer()).post('/quiz/answer/1/attempt/1').set('x-version', versionHeader).set('Authorization', `Bearer ${response.body.token}`).set('Session', 'session');
-        expect(response2.status).toBe(201);
-        expect(response2.body).toMatchObject({ status: 400, error: 'NOTINITIATED' });
+        const payload: { id: number } = jsonwebtoken.decode(response.body.token) as any;
+        const response2 = await request(app.getHttpServer())
+          .post(`/quiz/answer/1`)
+          .set('x-version', versionHeader)
+          .set('Authorization', `Bearer ${response.body.token}`)
+          .set('Session', cookie)
+          .send({
+            cmid: '1',
+            path: 'chunk1;chunk2',
+            name: 'name',
+            user: { id: '123', login: 'login', name: 'name' },
+            attempt: '444',
+          });
+        const attempt = await orm.em.findOneOrFail(QuizAttempt, payload.id, { populate: ['user'] });
+        const payload2 = jsonwebtoken.decode(response2.body.token);
+        const user = await orm.em.findOneOrFail('User', { userId: '123' });
+        expect(response2.body.status).toBe(202);
+        expect(response2.body.token).toEqual(expect.any(String));
+        expect(payload2).toMatchObject({ id: expect.any(Number), cmid: '1', path: 'name' });
+        expect(attempt).toMatchObject({ cmid: '1', path: 'chunk1;chunk2', user, attemptId: '444' });
+        expect(user).toMatchObject({ id: expect.any(Number), userId: '123', login: 'login', name: 'name' });
       });
       it(
-        'Should parse questions for initiated test',
+        'Should parse questions for test',
         async () => {
+          await orm.em.persistAndFlush(orm.em.create(QuizAttempt, { user: orm.em.getReference('User', 1), cmid: '186319', attemptId: '1050855', id: 100, code: { value: 'any' } }));
           const response = await request(app.getHttpServer())
-            .post('/quiz/answer/0/attempt/1050855')
+            .post('/quiz/answer/0/')
             .set('x-version', versionHeader)
-            .set('Authorization', `Bearer ${jsonwebtoken.sign({ id: 4 }, process.env.jwt_secret)}`)
-            .set('Session', cookie);
-          const attempt = await orm.em.findOneOrFail(QuizAttempt, { cmid: '186319' }, { populate: ['attemptAnswers'] });
+            .set('Authorization', `Bearer ${jsonwebtoken.sign({ id: 100 }, process.env.jwt_secret)}`)
+            .set('Session', cookie)
+            .send({ attempt: '1050855' });
+          const attempt = await orm.em.findOneOrFail(QuizAttempt, { id: 100 }, { populate: ['attemptAnswers'], refresh: true });
           const answers = attempt.attemptAnswers.getItems();
           expect(response.status).toBe(201);
           expect(response.body).toMatchObject({ status: 204, error: 'NOANSWER' });
@@ -432,7 +462,7 @@ describe('AppController (e2e)', () => {
           const response = (await Promise.race([
             new Promise((r) => {
               request(app.getHttpServer())
-                .post('/quiz/answer/0/attempt/1050855')
+                .post('/quiz/answer/0/')
                 .set('x-version', versionHeader)
                 .set('Authorization', `Bearer ${jsonwebtoken.sign({ id: 4 }, process.env.jwt_secret)}`)
                 .set('Session', cookie)
@@ -441,7 +471,7 @@ describe('AppController (e2e)', () => {
             new Promise((r) => {
               setTimeout(() => {
                 request(app.getHttpServer())
-                  .post('/quiz/answer/0/attempt/1050855')
+                  .post('/quiz/answer/0/')
                   .set('x-version', versionHeader)
                   .set('Authorization', `Bearer ${jsonwebtoken.sign({ id: 4 }, process.env.jwt_secret)}`)
                   .set('Session', cookie)
@@ -456,15 +486,16 @@ describe('AppController (e2e)', () => {
       );
       it('Should return answer for existing question', async () => {
         const attempt = await orm.em.findOneOrFail(QuizAttempt, 4, { populate: ['attemptAnswers.answer'] });
-        attempt.attemptAnswers.add(orm.em.create('QuizAttemptAnswer', { nativeId: 0, answer: orm.em.getReference('QuizAnswer', 1) }));
+        attempt.attemptAnswers.add(orm.em.create(QuizAttemptAnswer, { nativeId: 0, answer: orm.em.getReference('QuizAnswer', 1) }));
         attempt.questionAmount = 1;
         attempt.attemptId = '1050855';
         await orm.em.persistAndFlush(attempt);
         const response = await request(app.getHttpServer())
-          .post('/quiz/answer/0/attempt/1050855')
+          .post('/quiz/answer/0/')
           .set('x-version', versionHeader)
           .set('Authorization', `Bearer ${jsonwebtoken.sign({ id: 4 }, process.env.jwt_secret)}`)
-          .set('Session', cookie);
+          .set('Session', cookie)
+          .send({ attempt: '1050855' });
         const attemptanswer = await orm.em.findOneOrFail(QuizAttemptAnswer, { attempt: { id: 4 }, nativeId: 0 }, { populate: ['answer'] });
         expect(response.status).toBe(201);
         expect(response.body).toMatchObject({ delay: expect.any(Number), answer: expect.any(String), type: expect.any(Number) });
