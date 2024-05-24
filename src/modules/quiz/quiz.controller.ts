@@ -40,17 +40,16 @@ export class QuizController {
     return this.quizService.finishQuiz(req.user.id, finishQuizDto);
   }
 
-  @Post('answer/:page/attempt/:attempt')
+  @Post('answer/:page')
   @UseGuards(AuthVersionGuard, JwtAuthChromeGuard, UserStatusGuard)
   getQuizAnswer(
     @Req() req: QuizAnswerRequest,
     @Param('page') page: string,
-    @Param('attempt') attempt: string,
     @Headers('Session') session: string,
     @Body() updateQuizDto: UpdateQuizDto,
   ) {
     if (session) {
-      return this.quizService.getQuizAnswer(session, req.user.id, page, attempt, updateQuizDto);
+      return this.quizService.getQuizAnswer(session, req.user.id, page, updateQuizDto);
     } else {
       throw new HttpException('No session cookie', 401);
     }

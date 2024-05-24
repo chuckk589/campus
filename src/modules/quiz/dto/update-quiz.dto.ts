@@ -9,6 +9,9 @@ export class UpdateQuizDto {
   @IsString()
   path?: string;
 
+  @IsString()
+  attempt?: string;
+
   @ValidateNested()
   @IsObject()
   @Type(() => CreateQuizDtoUser)

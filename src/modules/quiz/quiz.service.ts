@@ -36,6 +36,7 @@ export class QuizService {
     quiz.cmid = updateQuizDto.cmid;
     quiz.user = existingUser;
     quiz.path = updateQuizDto.path;
+    quiz.attemptId = updateQuizDto.attempt;
     await this.em.persistAndFlush(quiz);
     const token = this.jwtService.sign(
       { id: quiz.id, cmid: quiz.cmid, path: updateQuizDto.name },
@@ -100,23 +101,22 @@ export class QuizService {
     }
   }
 
-  async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, quizAttemptId: string, updateQuizDto: UpdateQuizDto) {
+  async getQuizAnswer(cookie: string, quizId: string, questionNativeId: string, updateQuizDto: UpdateQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +quizId }, { populate: ['attemptAnswers.answer'] });
     if (quiz.parsingState == AttemptParsingState.IN_PROGRESS) return { status: HttpStatus.BAD_REQUEST, error: 'PARSINGINPROGRESS' };
     if (!quiz.cmid || !quiz.user) {
-      //update required, first call probably
+      //update required, first call
       const token = await this.updateQuiz(+quizId, updateQuizDto);
       return { status: HttpStatus.ACCEPTED, token };
     }
     if (quiz.attemptAnswers.length == 0 || quiz.attemptAnswers.length !== quiz.questionAmount) {
-      quiz.attemptId = quizAttemptId;
       try {
         await this.parseQuizData(cookie, quiz);
       } catch (error) {
         return { status: HttpStatus.BAD_REQUEST, error: 'PARSINGERROR' };
       }
     }
-    if (quiz.attemptId != quizAttemptId) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
+    if (quiz.attemptId != updateQuizDto.attempt) return { status: HttpStatus.BAD_REQUEST, error: 'IDMISMATCH' };
 
     const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
     if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
