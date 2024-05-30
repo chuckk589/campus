@@ -35,7 +35,7 @@ export class QuizService {
     const existingUser = await this.findOrCreateUser(updateQuizDto.user);
     quiz.cmid = updateQuizDto.cmid;
     quiz.user = existingUser;
-    quiz.path = updateQuizDto.path;
+    quiz.path = updateQuizDto.path + ';' + updateQuizDto.name;
     quiz.attemptId = updateQuizDto.attempt;
     await this.em.persistAndFlush(quiz);
     const token = this.jwtService.sign(
@@ -151,14 +151,12 @@ export class QuizService {
         },
         0,
       );
-
       const dom = new JSDOM(quizPage.data);
       const questions = dom.window.document.querySelectorAll('.qn_buttons a');
       const existingItems = quiz.attemptAnswers.getItems();
 
       quiz.questionAmount = questions.length;
       quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
-
       for (const question of questions) {
         const url = question.getAttribute('href');
         const nativeId = parseInt(url.split('page=').pop()) || 0;
