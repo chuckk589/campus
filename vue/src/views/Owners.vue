@@ -169,6 +169,9 @@ export default {
           );
         });
       });
+      this.$emitter.on('new-owner', (evt) => {
+        setTimeout(() => this.gridApi.applyTransaction({ add: [evt] }), 0);
+      });
     },
   },
 };
