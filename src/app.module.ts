@@ -15,8 +15,9 @@ import { ResultsModule } from './modules/results/results.module';
 import { AxiosRetryModule } from './modules/axios-retry/axios-retry.module';
 import ORMOptionsProvider from 'src/configs/mikro-orm.config';
 import { RestrictionModule } from './modules/restriction/restriction.module';
-import { TestModule } from './modules/test/test.module';
+// import { TestModule } from './modules/test/test.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { OwnerModule } from './modules/owner/owner.module';
 
 @Module({
   imports: [
@@ -49,7 +50,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ResultsModule,
     AxiosRetryModule,
     RestrictionModule,
-    TestModule,
+    OwnerModule,
+    // TestModule,
   ],
   controllers: [],
   providers: [],
