@@ -40,7 +40,7 @@ import AuthLogin from '../authForms/AuthLogin.vue';
     <!---Left Part-->
   </v-row>
 </template>
-<style lang="scss">
+<style scoped lang="scss">
 .loginBox {
   max-width: 475px;
   margin: 0 auto;
