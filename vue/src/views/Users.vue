@@ -6,7 +6,6 @@
     animateRows
     suppressCellFocus
     :get-row-id="getRowId"
-    :row-data="rowData"
     rowSelection="multiple"
     suppressRowClickSelection
     pagination
@@ -46,6 +45,7 @@ export default {
           field: 'isBanned',
           headerName: 'Заблокирован',
           sortable: true,
+          cellDataType: false,
           valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
         },
       ],
@@ -59,23 +59,15 @@ export default {
       getRowId: function (params) {
         return params.data.id;
       },
-      rowData: [],
     };
   },
-  beforeUnmount() {
-    // this.$emitter.off('edit-user');
-  },
+
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/user/` }).then((res) => {
-        this.rowData = res.data;
-        this.gridApi.setRowData(this.rowData);
+        this.gridApi.setGridOption('rowData', res.data);
       });
-      // this.$emitter.on('edit-user', (evt) => {
-      //   const rowNode = this.gridApi.getRowNode(evt.id);
-      //   rowNode.setData(evt);
-      // });
     },
   },
 };

@@ -21,7 +21,6 @@
       animateRows
       suppressCellFocus
       :get-row-id="getRowId"
-      :row-data="rowData"
       rowSelection="multiple"
       suppressRowClickSelection
       pagination
@@ -85,7 +84,6 @@ export default {
       getRowId: function (params) {
         return params.data.id;
       },
-      rowData: [],
     };
   },
   beforeUnmount() {
@@ -131,15 +129,13 @@ export default {
     onGridReady(params) {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/restriction` }).then((res) => {
-        this.rowData = res.data;
-        this.gridApi.setRowData(this.rowData);
+        this.gridApi.setGridOption('rowData', res.data);
       });
       this.$emitter.on('edit-restriction', (evt) => {
         const rowNode = this.gridApi.getRowNode(evt.id);
         rowNode.setData(evt);
       });
       this.$emitter.on('create-restriction', (evt) => {
-        this.rowData.push(evt);
         this.gridApi.applyTransaction({ add: [evt] });
       });
     },

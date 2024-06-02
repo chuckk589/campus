@@ -6,7 +6,6 @@
     animateRows
     suppressCellFocus
     :get-row-id="getRowId"
-    :row-data="rowData"
     rowSelection="multiple"
     suppressRowClickSelection
     pagination
@@ -57,8 +56,7 @@ export default {
     onGridReady(params) {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/results/` }).then((res) => {
-        this.rowData = res.data;
-        this.gridApi.setRowData(this.rowData);
+        this.gridApi.setGridOption('rowData', res.data);
       });
     },
   },

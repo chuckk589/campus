@@ -30,7 +30,6 @@
     :default-col-def="defaultColDef"
     suppressCellFocus
     :get-row-id="getRowId"
-    :row-data="rowData"
     animateRows
     rowModelType="serverSide"
     :serverSideDatasource="serverSideDatasource"
@@ -73,11 +72,11 @@ export default {
         { field: 'question_hash', headerName: 'Хэш вопроса' },
 
         { field: 'question_type', headerName: 'Тип', maxWidth: 100 },
-        { field: 'jsonAnswer', headerName: 'JSON' },
+        { field: 'jsonAnswer', headerName: 'JSON', sortable: false },
+        { field: 'updatedBy', headerName: 'Заполнен' },
         {
           field: 'createdAt',
           headerName: 'Дата создания',
-          sortable: true,
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
         },
       ],
@@ -95,7 +94,6 @@ export default {
         return params.data.id;
       },
       serverSideDatasource: null,
-      rowData: [],
       filtering: true,
     };
   },
@@ -107,8 +105,6 @@ export default {
       this.$refs.uploader.click();
     },
     onFileChanged(e) {
-      console.log(e);
-      // this.patterns = e.target.files;
       if (e.target.files.length == 0) return;
       const formData = new FormData();
       formData.append('file', e.target.files[0]);
@@ -120,8 +116,8 @@ export default {
           color: 'info',
           text: `Добавлено: ${res.data.result.success} новых шаблонов\nОбновлено: ${res.data.result.updated}\nОшибок в файлах: ${res.data.result.errored}`,
         });
-        this.rowData = res.data;
-        this.gridApi.setRowData(this.rowData);
+        // this.rowData = res.data;
+        // this.gridApi.setRowData(this.rowData);
       });
     },
     filterPending() {
@@ -139,33 +135,23 @@ export default {
     },
     onGridReady(params) {
       this.gridApi = params.api;
-      // params.api.setGridOption(
-      //   'serverSideDatasource',
-      //   this.serverSideDatasource,
-      // );
       this.serverSideDatasource = {
         getRows: (params) => {
           this.$http({
             method: 'POST',
-            url: `/v1/answers/lazy`,
+            url: `/v1/answers/load`,
             data: params.request,
           }).then((res) => {
-            params.successCallback(res.data.rows, res.data.lastRow);
+            params.success({
+              rowData: res.data.rows,
+            });
           });
         },
       };
-      // this.$http({ method: 'GET', url: `/v1/answers/` }).then((res) => {
-      //   this.rowData = res.data;
-      //   this.gridApi.setRowData(this.rowData);
-      // });
       this.$emitter.on('edit-answer', (evt) => {
         const node = this.gridApi.getRowNode(evt.id);
         node.setExpanded(false);
         node.setData(evt);
-        // const index = this.rowData.findIndex((c) => c.id == evt.id);
-        // this.rowData[index] = evt;
-        // this.gridApi.applyTransaction({ update: [evt] });
-        // this.gridApi.refreshCells({ force: true });
       });
     },
   },
