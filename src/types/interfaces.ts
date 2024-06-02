@@ -1,4 +1,6 @@
+import { FilterQuery } from '@mikro-orm/core';
 import { JSDOM } from 'jsdom';
+import { CustomBaseEntity } from 'src/modules/mikroorm/entities/CustomBaseEntity';
 
 /* eslint-disable no-constant-condition */
 export interface QuizAnswerRequest extends Request {
@@ -8,44 +10,8 @@ export interface QuizAnswerRequest extends Request {
   };
 }
 export type RequestWithVersion = Request & { headers: { 'x-version': string } } & QuizAnswerRequest;
-
-export interface IServerSideGetRowsRequest {
-  // First row requested or undefined for all rows.
-  startRow: number | undefined;
-  // Index after the last row required row or undefined for all rows.
-  endRow: number | undefined;
-  // Columns that are currently row grouped.
-  rowGroupCols: ColumnVO[];
-  // Columns that have aggregations on them.
-  valueCols: ColumnVO[];
-  // Columns that have pivot on them.
-  pivotCols: ColumnVO[];
-  // Defines if pivot mode is on or off.
-  pivotMode: boolean;
-  // What groups the user is viewing.
-  groupKeys: string[];
-  // If filtering, what the filter model is.
-  // If Advanced Filter is enabled, will be of type `AdvancedFilterModel | null`.
-  // If Advanced Filter is disabled, will be of type `FilterModel`.
-  // filterModel: FilterModel | AdvancedFilterModel | null;
-  // If sorting, what the sort model is.
-  sortModel: SortModelItem[];
-}
-
-interface ColumnVO {
-  id: string;
-  displayName: string;
-  field?: string;
-  aggFunc?: string;
-}
-
-interface SortModelItem {
-  // Column Id to apply the sort to.
-  colId: string;
-  // Sort direction
-  sort: 'asc' | 'desc';
-}
-
+export type RequestWithUser = Request & { user: ReqUser };
+export type ReqUser = { id: number; username: string; role: string };
 export type QuestionType = 0 | 1 | 2 | 3;
 export type QuestionPayload<T> = T extends 0 | 2
   ? { subject: string; options: string[] }
@@ -280,4 +246,12 @@ export class HTMLCampusParser {
     // console.log(text.charCodeAt(17), text.charCodeAt(18), text[17] == text[18]);
     return text.replaceAll(/ {2}/g, ' ').trim();
   }
+}
+
+export type ColumnNameResolveFunc<Entity extends object = object> = (columnName: string) => (value: any) => FilterQuery<Entity>;
+
+export function DtoFactory<Entity extends object>(resolveColumnName: ColumnNameResolveFunc<Entity>) {
+  return class {
+    static resolveColumnName = resolveColumnName;
+  };
 }
