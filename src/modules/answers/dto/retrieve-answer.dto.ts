@@ -10,6 +10,7 @@ export class RetrieveAnswerDto {
     this.html = answer.html;
     this.jsonAnswer = answer.jsonAnswer;
     this.createdAt = answer.createdAt;
+    this.updatedBy = answer.updatedBy?.username;
   }
   id: string;
   question_hash: string;
@@ -17,4 +18,5 @@ export class RetrieveAnswerDto {
   html: string;
   jsonAnswer: string;
   createdAt: Date;
+  updatedBy: string;
 }
