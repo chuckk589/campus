@@ -1,6 +1,5 @@
 import { EntityManager } from '@mikro-orm/core';
-import { HttpException, Injectable, Res } from '@nestjs/common';
-import { hash } from 'bcrypt';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Code, CodeStatus } from '../mikroorm/entities/Code';
 import { Config } from '../mikroorm/entities/Config';
 import { RetrieveStatusDto } from './dto/retrieve-status.dto';
@@ -11,8 +10,7 @@ import { QuestionResult } from '../mikroorm/entities/QuizAttemptAnswer';
 import JSZip from 'jszip';
 import fs from 'fs';
 import { User } from '../mikroorm/entities/User';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import * as crypto from 'crypto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OwnerRole } from '../mikroorm/entities/Owner';
 
 @Injectable()
