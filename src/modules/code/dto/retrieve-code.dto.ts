@@ -13,6 +13,7 @@ export class RetrieveCodeDto {
     if (restriction && code.attempt.createdAt > restriction.createdAt) {
       this.usedByBanned = true;
     }
+    this.createdBy = code.createdBy?.username;
   }
   id: string;
   value: string;
@@ -20,4 +21,5 @@ export class RetrieveCodeDto {
   createdAt: Date;
   usedBy: string;
   usedByBanned: boolean;
+  createdBy: string;
 }
