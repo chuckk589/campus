@@ -1,23 +1,26 @@
-import { EntityManager, wrap } from '@mikro-orm/core';
-import { Injectable } from '@nestjs/common';
+import { EntityManager } from '@mikro-orm/core';
+import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AppConfigService } from '../app-config/app-config.service';
-import { compare } from 'bcrypt';
 import { Config } from '../mikroorm/entities/Config';
-import { User } from '../mikroorm/entities/User';
-import { QuizAttempt } from '../mikroorm/entities/QuizAttempt';
-import { UserRestriction } from '../mikroorm/entities/UserRestriction';
+import { Owner } from '../mikroorm/entities/Owner';
+import { ReqUser } from 'src/types/interfaces';
 
 @Injectable()
 export class AuthService {
   constructor(private readonly jwtService: JwtService, private readonly em: EntityManager) {}
 
-  async validateUser(pass: string): Promise<any> {
-    const password = await this.em.findOne(Config, { name: 'ADMIN_PASSCODE' });
-    const valid = await compare(pass, password.value);
-    return valid && { username: 'admin' };
+  async validateUser(payload: { username: string; password: string }): Promise<Owner | null> {
+    const user = await this.em.getRepository(Owner).validateUser(payload.username, payload.password);
+    return user;
   }
-
+  async register(payload: { username: string; password: string }): Promise<{ id: number; role: string; token: string }> {
+    const user = await this.em.getRepository(Owner).createIfNotExists({ username: payload.username, password: payload.password });
+    if (!user) {
+      throw new HttpException('User already exists', 400);
+    }
+    await this.em.persistAndFlush(user);
+    return this.login({ id: user.id, role: user.role, username: user.username });
+  }
   async validateUserStatus(attemptId: number): Promise<any> {
     const restriction = await this.em
       .getConnection()
@@ -35,10 +38,19 @@ export class AuthService {
     const existingVersion = await this.em.findOne(Config, { name: 'VERSION' });
     return existingVersion.value == version;
   }
+  async validateRole(user: ReqUser, allowedRoles: string[]): Promise<boolean> {
+    const entity = await this.em.findOne(Owner, { id: user.id }, { refresh: true });
+    if (!entity) {
+      return false;
+    }
+    return allowedRoles.includes(entity.role);
+  }
 
-  async login(user: { username: string }) {
+  async login(user: ReqUser): Promise<{ id: number; role: string; token: string }> {
     return {
-      access_token: this.jwtService.sign(user),
+      id: user.id,
+      role: user.role,
+      token: this.jwtService.sign(user),
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AppConfigService } from 'src/modules/app-config/app-config.service';
@@ -10,6 +10,7 @@ import { JwtChromeStrategy } from './strategies/jwt-chrome.strategy';
 import { LocalVersionStrategy } from './strategies/local-version.strategy';
 import { UserStatusStrategy } from './strategies/user-status.strategy';
 
+@Global()
 @Module({
   imports: [
     PassportModule,
@@ -22,5 +23,6 @@ import { UserStatusStrategy } from './strategies/user-status.strategy';
   ],
   providers: [LocalStrategy, JwtStrategy, JwtChromeStrategy, LocalVersionStrategy, AuthService, UserStatusStrategy],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}
