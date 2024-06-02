@@ -57,9 +57,27 @@ export default {
           headerName: 'Attempt ID',
           cellRenderer: 'agGroupCellRenderer',
         },
-        { field: 'userName', headerName: 'Имя' },
-        { field: 'questionAmount', headerName: 'Кол-во вопросов' },
-        { field: 'path', headerName: 'Категории', cellRenderer: 'PathCell' },
+        {
+          field: 'userName',
+          headerName: 'Имя',
+        },
+        {
+          field: 'questionAmount',
+          filter: 'agNumberColumnFilter',
+          headerName: 'Кол-во вопросов',
+        },
+        {
+          field: 'pendingAmount',
+          headerName: 'Без ответа',
+          filter: false,
+          sortable: false,
+        },
+        {
+          field: 'path',
+          headerName: 'Категории',
+          cellRenderer: 'PathCell',
+          sortable: false,
+        },
         { field: 'cmid', headerName: 'CMID' },
         {
           field: 'status',
@@ -70,6 +88,7 @@ export default {
         },
         {
           field: 'createdAt',
+          filter: 'agDateColumnFilter',
           headerName: 'Дата создания',
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
         },
@@ -85,7 +104,11 @@ export default {
       defaultColDef: {
         sortable: true,
         flex: 1,
-        filter: true,
+        filter: 'agTextColumnFilter',
+        floatingFilter: true,
+        filterParams: {
+          suppressAndOrCondition: true,
+        },
       },
       serverSideDatasource: null,
       detailCellRendererParams: {
@@ -105,12 +128,17 @@ export default {
               headerName: 'ID',
               valueFormatter: (params) => +params.value + 1,
             },
-            // {
-            //   field: 'answered',
-            //   headerName: 'Получен ответ',
-            //   valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
-            // },
-            { field: 'jsonAnswer', headerName: 'JSON' },
+            {
+              field: 'jsonAnswer',
+              headerName: 'JSON',
+              cellStyle: (params) => {
+                if (params.data.jsonAnswer) {
+                  return { backgroundColor: 'rgba(0, 128, 0, 0.1)' };
+                } else {
+                  return { backgroundColor: 'rgba(255, 0, 0, 0.1)' };
+                }
+              },
+            },
             {
               field: 'result',
               headerName: 'Результат',
@@ -118,21 +146,16 @@ export default {
                 this.$ctable.que_result.find((c) => c.value == params.value)
                   ?.title,
             },
-            // {
-            //   field: 'action',
-            //   headerName: '',
-            //   maxWidth: 70,
-            //   cellRenderer: 'AttemptAnswerCell',
-            // },
           ],
+          isRowMaster: (dataItem) => {
+            return !dataItem.disabled;
+          },
+
           defaultColDef: {
             sortable: true,
             filter: true,
             flex: 1,
           },
-          // getDetailRowData: (params) => {
-          //   params.successCallback(params.data.children);
-          // },
         },
         getDetailRowData: (params) => {
           params.successCallback(params.data.answers);
@@ -145,48 +168,29 @@ export default {
   },
   beforeUnmount() {
     this.$emitter.off('edit-attempt');
-    // this.$emitter.off('edit-attempt-answer');
     this.$emitter.off('edit-answer');
   },
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
-      // this.$http({ method: 'GET', url: `/v1/attempt/` }).then((res) => {
-      //   this.rowData = res.data;
-      //   this.gridApi.setRowData(res.data);
-      // });
       this.serverSideDatasource = {
         getRows: (params) => {
           this.$http({
             method: 'POST',
-            url: `/v1/attempt/lazy`,
+            url: `/v1/attempt/load`,
             data: params.request,
           }).then((res) => {
-            params.successCallback(res.data.rows, res.data.lastRow);
+            params.success({
+              rowData: res.data.rows,
+            });
           });
         },
       };
       this.$emitter.on('edit-attempt', (evt) => {
-        // const index = this.rowData.findIndex((c) => c.id == evt.id);
-        // this.rowData[index] = evt;
-        // this.gridApi.applyTransaction({ update: [evt] });
-        // this.gridApi.refreshCells({ force: true });
         const node = this.gridApi.getRowNode(evt.id);
         node.setData(evt);
       });
-      // this.$emitter.on('edit-attempt-answer', (evt) => {
-      //   const row = this.rowData.find((c) =>
-      //     c.answers.find((d) => d.id == evt.id),
-      //   );
-      //   row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
-      //   setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
-      // });
       this.$emitter.on('edit-answer', (evt) => {
-        // const row = this.rowData.find((c) =>
-        //   c.answers.find((d) => d.id == evt.id),
-        // );
-        // row.answers[row.answers.findIndex((c) => c.id == evt.id)] = evt;
-        // setTimeout(() => this.gridApi.applyTransaction({ update: [row] }), 0);
         this.gridApi.forEachNode((n) => {
           const rowindex = n.data.answers.findIndex((c) => c.id == evt.id);
           if (rowindex != -1) {
