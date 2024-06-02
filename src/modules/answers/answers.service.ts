@@ -1,13 +1,15 @@
 import 'openai/shims/node'; //temporary fix for openai tests
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, wrap } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { HttpException } from '@nestjs/common/exceptions';
 import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
 import { RetrieveAnswerDto } from './dto/retrieve-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import JSZip from 'jszip';
-import { IServerSideGetRowsRequest, QuestionType } from 'src/types/interfaces';
+import { QuestionType, ReqUser } from 'src/types/interfaces';
 import { OpenAiService } from 'src/libs/openai/openai.service';
+import { IServerSideGetRowsRequest } from 'src/types/agGridTypes';
+import { Owner } from '../mikroorm/entities/Owner';
 
 @Injectable()
 export class AnswersService {
@@ -22,7 +24,12 @@ export class AnswersService {
     const answers = await this.em.find(
       QuizAnswer,
       {},
-      { limit: body.endRow - body.startRow, offset: body.startRow, orderBy: body.sortModel.map((sort) => ({ [sort.colId]: sort.sort })) },
+      {
+        limit: body.endRow - body.startRow,
+        offset: body.startRow,
+        orderBy: body.sortModel.map((sort) => ({ [sort.colId]: sort.sort })),
+        populate: ['updatedBy'],
+      },
     );
     const answersCount = await this.em.count(QuizAnswer, {});
     return {
@@ -71,7 +78,7 @@ export class AnswersService {
     return answers.map((answer) => new RetrieveAnswerDto(answer));
   }
 
-  async update(id: number, updateAnswerDto: UpdateAnswerDto) {
+  async update(user: ReqUser, id: number, updateAnswerDto: UpdateAnswerDto) {
     try {
       JSON.parse(updateAnswerDto.json);
     } catch (error) {
@@ -79,7 +86,8 @@ export class AnswersService {
     }
     const answer = await this.em.findOneOrFail(QuizAnswer, id);
     answer.jsonAnswer = updateAnswerDto.json;
-    await this.em.persistAndFlush(answer);
+    answer.updatedBy = this.em.getReference(Owner, user.id);
+    await wrap(answer).init();
     return new RetrieveAnswerDto(answer);
   }
 }

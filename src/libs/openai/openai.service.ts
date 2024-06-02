@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/core';
 import { HttpException, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import OpenAI from 'openai';
 import { ChatCompletionAssistantMessageParam } from 'openai/resources';
 import { AppConfigService } from 'src/modules/app-config/app-config.service';
@@ -12,21 +12,21 @@ import { HTMLCampusParser } from 'src/types/interfaces';
 export class OpenAiService {
   private readonly client: OpenAI;
 
-  constructor(private readonly configService: AppConfigService, private readonly em: EntityManager, private eventEmitter: EventEmitter2) {
+  constructor(private readonly configService: AppConfigService, private readonly em: EntityManager) {
     const configuration = {
       apiKey: this.configService.get('OPENAI_API_KEY') || 'OPENAI_API_KEY',
     };
 
     this.client = new OpenAI(configuration);
-    this.eventEmitter.on('config_updated', async (config: Config) => {
-      if (config.name === 'OPENAI_API_KEY') {
-        this.client.apiKey = config.value;
-      }
-    });
   }
-  public async switchApiKey(apiKey: string) {
-    this.client.apiKey = apiKey;
+
+  @OnEvent('config_updated')
+  public async switchApiKey(config: Config) {
+    if (config.name === 'OPENAI_API_KEY') {
+      this.client.apiKey = config.value;
+    }
   }
+
   public async getAIResponse(html: string, question_type: QuestionType): Promise<string | number[]> {
     const currentModel = await this.em.find(Config, { name: { $in: ['OPENAI_MODEL', 'OPENAI_REPEATS'] } });
     if (currentModel.length !== 2) {
@@ -64,16 +64,6 @@ export class OpenAiService {
 
     const result = await this.getResponseWithCtx(supplyText, 1, model.value);
 
-    // return question_type == 3
-    //   ? result[0]
-    //   : result[0]
-    //       .replaceAll(/\$/g, '')
-    //       .split(',')
-    //       .filter((el) => el.length > 0)
-    //       .map((el) => {
-    //         el.trim();
-    //         return parseInt(el);
-    //       });
     if (question_type == 3) {
       return result[0];
     } else if (question_type == 0 || question_type == 2) {
