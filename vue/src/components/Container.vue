@@ -13,7 +13,7 @@
           to="/main/owners"
           value="8"
           color="#1867C0"
-          v-if="store.user.role == 'admin'"
+          v-if="store.user?.role == 'admin'"
         >
           <template v-slot:prepend>
             <v-icon class="mr-5" icon="mdi-security "></v-icon>
@@ -39,7 +39,7 @@
           to="/main/answers"
           value="3"
           color="#1867C0"
-          v-if="store.user.role == 'admin'"
+          v-if="store.user?.role == 'admin'"
         >
           <template v-slot:prepend>
             <v-icon class="mr-5" icon="mdi-chat-question"></v-icon>
@@ -65,7 +65,7 @@
           to="/main/settings"
           value="6"
           color="#1867C0"
-          v-if="store.user.role == 'admin'"
+          v-if="store.user?.role == 'admin'"
         >
           <template v-slot:prepend>
             <v-icon class="mr-5" icon="mdi-cog"></v-icon>
