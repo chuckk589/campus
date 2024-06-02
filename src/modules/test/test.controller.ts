@@ -11,10 +11,10 @@ export class TestController {
   //   return this.testService.create(createTestDto);
   // }
 
-  @Get()
-  findAll(@Query() query: { limit: number; offset: number }) {
-    return this.testService.findAll(query);
-  }
+  // @Get()
+  // findAll(@Query() query: { limit: number; offset: number }) {
+  //   return this.testService.findAll(query);
+  // }
 
   // @Get('sample')
   // getSample() {

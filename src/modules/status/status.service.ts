@@ -19,7 +19,7 @@ import { OwnerRole } from '../mikroorm/entities/Owner';
 export class StatusService {
   constructor(private readonly em: EntityManager, private eventEmitter: EventEmitter2) {}
 
-  private secrets = ['ADMIN_PASSCODE', 'OPENAI_API_KEY'];
+  private secrets = ['OPENAI_API_KEY'];
 
   // @OnEvent('config_updated')
   // handleConfigUpdatedEvent(config: Config) {

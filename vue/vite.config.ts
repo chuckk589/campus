@@ -11,7 +11,6 @@ import vuetify from 'vite-plugin-vuetify';
 export default defineConfig({
   server: {
     port: 3001,
-    https: false,
     host: true,
     proxy: {
       '/v1': {
@@ -21,6 +20,11 @@ export default defineConfig({
       '/auth': {
         target: 'http://localhost:3000/',
         changeOrigin: true,
+        bypass: (req) => {
+          if (req.method !== 'POST') {
+            return req.url;
+          }
+        },
       },
       '/files': {
         target: 'http://localhost:3000/',
