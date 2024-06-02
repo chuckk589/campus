@@ -13,19 +13,9 @@ import { AnswersService } from '../answers/answers.service';
 export class AttemptController {
   constructor(private readonly attemptService: AttemptService) {}
 
-  // @Post()
-  // create(@Body() createAttemptDto: CreateAttemptDto) {
-  //   return this.attemptService.create(createAttemptDto);
-  // }
-
-  @Get()
-  findAll() {
-    return this.attemptService.findAll();
-  }
-
-  @Post('/lazy')
-  lazyload(@Body() body: IServerSideGetRowsRequest) {
-    return this.attemptService.lazyload(body);
+  @Post('/load')
+  lazyload(@Req() req: RequestWithUser, @Body() body: IServerSideGetRowsRequest) {
+    return this.attemptService.lazyload(body, req.user);
   }
 
   @Put(':id')
