@@ -4,7 +4,7 @@ import { AxiosRequestConfig, Method, AxiosResponse } from 'axios';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import https from 'https';
 import { AxiosError } from 'axios';
-import fs from 'fs';
+
 @Injectable()
 export class AxiosRetryService {
   constructor(
