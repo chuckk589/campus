@@ -11,12 +11,45 @@ import { QuestionResult } from '../mikroorm/entities/QuizAttemptAnswer';
 import JSZip from 'jszip';
 import fs from 'fs';
 import { User } from '../mikroorm/entities/User';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import * as crypto from 'crypto';
+import { OwnerRole } from '../mikroorm/entities/Owner';
 
 @Injectable()
 export class StatusService {
   constructor(private readonly em: EntityManager, private eventEmitter: EventEmitter2) {}
+
   private secrets = ['ADMIN_PASSCODE', 'OPENAI_API_KEY'];
+
+  // @OnEvent('config_updated')
+  // handleConfigUpdatedEvent(config: Config) {
+  //   if (config.name === 'VERSION') {
+  //     fs.readFile('./dist/public/build.zip', (err, data) => {
+  //       if (err) throw err;
+  //       JSZip.loadAsync(data)
+  //         .then(async (zip: JSZip & { files: { [key: string]: JSZip.JSZipObject & { _data: any } } }) => {
+  //           const hash = crypto.createHash('sha256');
+
+  //           for (const filename of Object.keys(zip.files)) {
+  //             hash.update((await zip.files[filename].async('nodebuffer')).toString('base64'));
+  //           }
+  //           const hashValue = hash.digest('hex');
+  //           const config = await this.em.findOne(Config, { name: 'EXTENSION_HASH' });
+  //           if (config) {
+  //             config.value = hashValue;
+  //             await this.em.persistAndFlush(config);
+  //           } else {
+  //             const newConfig = this.em.create(Config, { name: 'EXTENSION_HASH', value: hashValue });
+  //             await this.em.persistAndFlush(newConfig);
+  //           }
+  //         })
+  //         .catch((err) => {
+  //           console.error(err);
+  //         });
+  //     });
+  //   }
+  // }
+
   async getCurrentVersion(res: Response) {
     const data = await this.em.find(Config, { name: { $in: ['HOSTNAME', 'VERSION'] } });
     if (data.length !== 2) throw new HttpException('Не удалось получить версию', 500);
@@ -31,19 +64,13 @@ export class StatusService {
       });
     });
   }
+
   async drop() {
     const quizes = await this.em.find(QuizAttempt, {}, { populate: ['attemptAnswers', 'result'] });
     const codes = await this.em.find(Code, {});
     const users = await this.em.find(User, {});
     await this.em.removeAndFlush([...quizes, ...codes, ...users]);
   }
-  // async getSession(retrieveSessionDto: RetrieveSessionDto) {
-  //   axios
-  //     .get('https://campus.fa.ru/pluginfile.php/450671/question/answer/454744/7/7855308/image001.png', {
-  //       headers: { cookie: `MoodleSessionnewcampusfaru=s44p51qkqiufkp81dnn420nn2f` },
-  //     })
-  //     .then((res) => console.log(res.data));
-  // }
 
   async findAll(): Promise<Record<string, RetrieveStatusDto[]>> {
     const code_statuses = {
@@ -61,8 +88,13 @@ export class StatusService {
       failed: 'Неверно',
       default: 'Неизвестно',
     };
+    const owner_roles = {
+      admin: 'Администратор',
+      user: 'Пользователь',
+    };
     const chatgpt_models = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-vision-preview'];
     return {
+      owner_role: Object.values(OwnerRole).map((role) => new RetrieveStatusDto({ value: role, title: owner_roles[role] })),
       code_status: Object.values(CodeStatus).map((status) => new RetrieveStatusDto({ value: status, title: code_statuses[status] })),
       quiz_status: Object.values(AttemptStatus).map((status) => new RetrieveStatusDto({ value: status, title: quiz_statuses[status] })),
       que_result: Object.values(QuestionResult).map((status) => new RetrieveStatusDto({ value: status, title: que_statuses[status] })),
@@ -73,6 +105,7 @@ export class StatusService {
   async findConfigs() {
     const configs = await this.em.find(Config, {});
     //cut secret values
+    //FIXME: move to interceptor
     return configs.map((config) => {
       if (this.secrets.includes(config.name)) {
         config.value = '';
@@ -81,21 +114,10 @@ export class StatusService {
     });
   }
   async updateConfig(id: number, updateConfigDto: UpdateConfigDto) {
-    const config = await this.em.findOneOrFail(Config, id);
-    //check if secret and not null
-    if (this.secrets.includes(config.name) && !updateConfigDto.value) return;
-    if (config.name == 'ADMIN_PASSCODE') {
-      updateConfigDto.value && (config.value = await hash(updateConfigDto.value, 10));
-    } else if (config.name == 'QUESTION_TIME') {
-      const result = updateConfigDto.value.match(/^\d*-\d*$/);
-      if (!result) throw new HttpException('Неверный формат времени', 400);
-      config.value = updateConfigDto.value;
-    } else {
-      updateConfigDto.value && (config.value = updateConfigDto.value);
-    }
-    updateConfigDto.description && (config.description = updateConfigDto.description);
-    this.eventEmitter.emit('config_updated', config);
+    const config = await this.em.getRepository(Config).safeUpdate(id, updateConfigDto);
+    if (!config) return;
     await this.em.persistAndFlush(config);
+    this.eventEmitter.emit('config_updated', config);
     return config;
   }
 }

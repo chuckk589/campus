@@ -135,6 +135,7 @@ export class QuizService {
       return { status: HttpStatus.NO_CONTENT, error: 'NOANSWER' };
     }
   }
+  //TODO: move to redis?
   //https://campus.fa.ru/mod/quiz/view.php?id=483595
   async parseQuizData(cookie: string, quiz: QuizAttempt) {
     try {

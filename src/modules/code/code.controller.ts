@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Put, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CodeService } from './code.service';
 import { CreateCodeDto } from './dto/create-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
+import { ReqUser } from 'src/types/interfaces';
 
 @Controller({ version: '1', path: 'code' })
 @UseGuards(JwtAuthGuard)
@@ -10,19 +11,14 @@ export class CodeController {
   constructor(private readonly codeService: CodeService) {}
 
   @Post()
-  create(@Body() createCodeDto: CreateCodeDto) {
-    return this.codeService.create(createCodeDto);
+  create(@Req() request: Request & { user: ReqUser }, @Body() createCodeDto: CreateCodeDto) {
+    return this.codeService.create(request.user, createCodeDto);
   }
 
   @Get()
-  findAll() {
-    return this.codeService.findAll();
+  findAll(@Req() request: Request & { user: ReqUser }) {
+    return this.codeService.findAll(request.user);
   }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.codeService.findOne(+id);
-  // }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateCodeDto: UpdateCodeDto) {

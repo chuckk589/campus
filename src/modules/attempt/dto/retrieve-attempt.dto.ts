@@ -1,9 +1,11 @@
 import { QuizAnswer } from 'src/modules/mikroorm/entities/QuizAnswer';
 import { QuizAttempt } from 'src/modules/mikroorm/entities/QuizAttempt';
 import { RetrieveAttemptAnswerDto } from './retrieve-attempt-answer.dto';
+import { OwnerRole } from 'src/modules/mikroorm/entities/Owner';
 
 export class RetrieveAttemptDto {
-  constructor(attempt: QuizAttempt) {
+  constructor(attempt: QuizAttempt, role: OwnerRole = OwnerRole.ADMIN) {
+    const attemptAnswers = attempt.attemptAnswers?.getItems();
     this.id = attempt.id.toString();
     this.attemptId = attempt.attemptId?.toString();
     this.questionAmount = attempt.questionAmount?.toString();
@@ -12,8 +14,9 @@ export class RetrieveAttemptDto {
     this.userName = attempt.user?.name;
     this.createdAt = attempt.createdAt;
     this.status = attempt.attemptStatus;
-    this.answers = attempt.attemptAnswers?.getItems().map((attemptAnswer) => new RetrieveAttemptAnswerDto(attemptAnswer));
+    this.answers = attemptAnswers.map((attemptAnswer) => new RetrieveAttemptAnswerDto(attemptAnswer, role));
     this.path = attempt.path ? attempt.path.split(';') : [];
+    this.pendingAmount = attemptAnswers.filter((answer) => !answer.answer.jsonAnswer).length;
   }
   createdAt: Date;
   id: string;
@@ -25,4 +28,5 @@ export class RetrieveAttemptDto {
   path: string[];
   userName: string;
   answers: RetrieveAttemptAnswerDto[];
+  pendingAmount: number;
 }
