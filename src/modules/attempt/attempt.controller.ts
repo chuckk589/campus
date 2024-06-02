@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { Put } from '@nestjs/common/decorators';
+import { Put, Req } from '@nestjs/common/decorators';
 import { UpdateAnswerDto } from '../answers/dto/update-answer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AttemptService } from './attempt.service';
 import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
-import { IServerSideGetRowsRequest } from 'src/types/interfaces';
-import { AnswersService } from '../answers/answers.service';
+import { IServerSideGetRowsRequest } from 'src/types/agGridTypes';
+import { RequestWithUser } from 'src/types/interfaces';
 
 @Controller({ version: '1', path: 'attempt' })
 @UseGuards(JwtAuthGuard)
@@ -34,8 +34,7 @@ export class AttemptController {
   }
 
   @Put('/pattern/:id')
-  updatePattern(@Param('id') attemptAnswerId: string, @Body() updateAnswerDto: UpdateAnswerDto) {
-    return this.attemptService.updatePattern(+attemptAnswerId, updateAnswerDto);
+  updatePattern(@Req() req: RequestWithUser, @Param('id') attemptAnswerId: string, @Body() updateAnswerDto: UpdateAnswerDto) {
+    return this.attemptService.updatePattern(req.user, +attemptAnswerId, updateAnswerDto);
   }
 }
-// /attempt/pattern/84/ai
