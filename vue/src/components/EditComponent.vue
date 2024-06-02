@@ -6,7 +6,7 @@
     <v-container class="">
       <v-card
         class="ma-auto d-flex flex-column justify-space-around"
-        min-width="700px"
+        max-width="500px"
         min-height="300px"
       >
         <v-card-title>{{ payload.header }}</v-card-title>
@@ -50,6 +50,18 @@
               aspect-ratio="1"
               :src="field.value"
             ></v-img>
+            <v-text-field
+              v-else-if="field.type == 'password'"
+              density="comfortable"
+              :key="'p' + index"
+              :label="field.label || field.key"
+              :hint="field.hint"
+              :disabled="isFieldActive(field)"
+              v-model="field.value"
+              :append-inner-icon="field.show ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="field.show ? 'text' : 'password'"
+              @click:append-inner="field.show = !field.show"
+            />
             <v-text-field
               v-else
               density="comfortable"
