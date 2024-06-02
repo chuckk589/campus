@@ -38,8 +38,17 @@ export class AttemptService {
     };
   }
 
-  async updatePattern(attemptAnswerId: number, updateAnswerDto: UpdateAnswerDto) {
-    const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, attemptAnswerId, { populate: ['answer'] });
+  async updatePattern(user: ReqUser, attemptAnswerId: number, updateAnswerDto: UpdateAnswerDto) {
+    const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, attemptAnswerId, {
+      populate: ['answer', 'attempt.code.createdBy'],
+    });
+
+    //only allow admin or owner of code which is associated with the attempt to update the answer
+    if (user.role != OwnerRole.ADMIN && user.id != attemptAnswer.attempt?.code?.createdBy?.id) {
+      this.logger.warn(`User ${user.id} attempted to update answer ${attemptAnswerId} but is not the owner of the code`);
+      throw new HttpException('Insufficient permissions', 405);
+    }
+
     if (attemptAnswer.answer) {
       try {
         JSON.parse(updateAnswerDto.json);
