@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RequestWithUser } from 'src/types/interfaces';
 
 @Controller({
   path: 'user',
@@ -11,8 +12,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Req() req: RequestWithUser) {
+    return this.userService.findAll(req.user);
   }
 
   // // @Get(':id')
