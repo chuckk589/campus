@@ -49,10 +49,10 @@ export class QuizService {
     if (quiz.result) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
     const answers = quiz.attemptAnswers.getItems();
     answers.forEach((answer) => {
-      if (finishQuizDto.incorrectQuestions.find((item) => +item - 1 == answer.nativeId)) {
-        answer.finalResult = QuestionResult.FAILED;
-      } else {
+      if (finishQuizDto.correctQuestions.find((item) => +item - 1 == answer.nativeId)) {
         answer.finalResult = QuestionResult.SUCCESS;
+      } else {
+        answer.finalResult = QuestionResult.FAILED;
       }
     });
     quiz.attemptStatus = AttemptStatus.FINISHED;

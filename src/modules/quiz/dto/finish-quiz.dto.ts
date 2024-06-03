@@ -6,7 +6,7 @@ export class summaryData {
 }
 export class FinishQuizDto {
   @IsString({ each: true })
-  incorrectQuestions!: string[];
+  correctQuestions!: string[];
 
   @IsObject()
   @Type(() => summaryData)
