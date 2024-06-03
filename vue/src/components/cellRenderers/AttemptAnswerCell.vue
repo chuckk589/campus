@@ -22,7 +22,7 @@ export default {
       this.$emitter.emit('openModal', {
         url: `/attempt/answer/${this.params.data.id}`,
         method: 'PUT',
-        header: `Вопрос #${+this.params.data.nativeId + 1}`,
+        header: `Вопрос #${+this.params.data.nativeId}`,
         eventName: 'edit-attempt-answer',
         fields: [
           {
