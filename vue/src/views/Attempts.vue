@@ -127,12 +127,15 @@ export default {
               cellRenderer: 'agGroupCellRenderer',
               headerName: 'ID',
               valueFormatter: (params) => +params.value + 1,
+              comparator: (valueA, valueB) => valueA - valueB,
             },
             {
               field: 'jsonAnswer',
               headerName: 'JSON',
+              valueFormatter: (params) =>
+                params.data.disabled ? '*****' : params.value,
               cellStyle: (params) => {
-                if (params.data.jsonAnswer) {
+                if (params.data.disabled || params.data.jsonAnswer) {
                   return { backgroundColor: 'rgba(0, 128, 0, 0.1)' };
                 } else {
                   return { backgroundColor: 'rgba(255, 0, 0, 0.1)' };
