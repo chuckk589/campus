@@ -3,6 +3,7 @@ import { UpdateRestrictionDto } from './dto/update-restriction.dto';
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Put, Query } from '@nestjs/common';
 import { RestrictionService } from './restriction.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/guards/role.guard';
 
 @Controller({
   path: 'restriction',
@@ -28,6 +29,7 @@ export class RestrictionController {
   }
 
   @Delete()
+  @Roles(['admin'])
   remove(@Query('ids') ids: string) {
     return this.restrictionService.remove(ids.split(',').map((id) => +id));
   }

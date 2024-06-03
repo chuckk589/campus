@@ -10,7 +10,12 @@
         >Добавить</v-btn
       >
 
-      <v-btn @click="deleteBanned" size="small" color="error" variant="outlined"
+      <v-btn
+        @click="deleteBanned"
+        size="small"
+        color="error"
+        variant="outlined"
+        v-if="store.user?.role == 'admin'"
         >Удалить выбранное</v-btn
       >
     </div>
@@ -35,6 +40,7 @@
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 import BanCell from '@/components/cellRenderers/BanCell.vue';
+import { useAuthStore } from '@/stores/auth';
 export default {
   name: 'BanlistView',
   components: {
@@ -85,6 +91,9 @@ export default {
         return params.data.id;
       },
     };
+  },
+  computed: {
+    store: () => useAuthStore(),
   },
   beforeUnmount() {
     this.$emitter.off('create-restriction');
