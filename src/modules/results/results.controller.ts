@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResultsService } from './results.service';
+import { RequestWithUser } from 'src/types/interfaces';
 
 @Controller({
   path: 'results',
@@ -11,7 +12,7 @@ export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 
   @Get()
-  findAll() {
-    return this.resultsService.findAll();
+  findAll(@Req() req: RequestWithUser) {
+    return this.resultsService.findAll(req.user);
   }
 }
