@@ -3,9 +3,32 @@
     <v-app-bar app>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-      <div class="d-flex justify-center">
+      <div class="d-flex justify-center mr-auto">
         <v-btn @click="search">Поиск</v-btn>
       </div>
+      <!-- ---------------------------------------------- -->
+      <!-- User Profile -->
+      <!-- ---------------------------------------------- -->
+      <v-menu :close-on-content-click="false">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            class="profileBtn text-primary"
+            color="lightprimary"
+            variant="flat"
+            rounded="pill"
+            v-bind="props"
+          >
+            <!-- <v-avatar size="30" class="mr-2 py-2">
+              <img src="@/assets/social-google.svg" alt="Julia" />
+            </v-avatar> -->
+            <!-- <SettingsIcon stroke-width="1.5" /> -->
+            <VIcon icon="mdi-cog" size="20" />
+          </v-btn>
+        </template>
+        <v-sheet rounded="md" width="330" elevation="12">
+          <ProfileDD />
+        </v-sheet>
+      </v-menu>
     </v-app-bar>
     <v-navigation-drawer permanent v-model="drawer">
       <v-list>
@@ -81,12 +104,8 @@
           <v-list-item-title>Блокировки</v-list-item-title>
         </v-list-item>
       </v-list>
-      <template v-slot:append>
-        <div class="pa-2">
-          <v-btn @click="logout" block> Выйти </v-btn>
-        </div>
-      </template>
     </v-navigation-drawer>
+
     <v-main>
       <v-container
         fluid
@@ -102,12 +121,14 @@
 <script>
 import EditComponent from './EditComponent.vue';
 import { useAuthStore } from '../stores/auth';
+import ProfileDD from './header/ProfileDD.vue';
 import app from '../main';
 
 export default {
   name: 'ContainerView',
   components: {
     EditComponent,
+    ProfileDD,
   },
   data() {
     return {
