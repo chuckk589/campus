@@ -10,7 +10,7 @@ export class RetrieveAttemptAnswerDto {
     this.result = attemptAnswer.finalResult;
     this.question_type = attemptAnswer.answer.question_type.toString();
     if (role != OwnerRole.ADMIN && attemptAnswer.answer.jsonAnswer) {
-      this.jsonAnswer = '';
+      this.jsonAnswer = null;
       this.disabled = true;
     } else {
       this.jsonAnswer = attemptAnswer.answer.jsonAnswer;

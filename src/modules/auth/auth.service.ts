@@ -46,10 +46,11 @@ export class AuthService {
     return allowedRoles.includes(entity.role);
   }
 
-  async login(user: ReqUser): Promise<{ id: number; role: string; token: string }> {
+  async login(user: ReqUser): Promise<ReqUser & { token: string }> {
     return {
       id: user.id,
       role: user.role,
+      username: user.username,
       token: this.jwtService.sign(user),
     };
   }
