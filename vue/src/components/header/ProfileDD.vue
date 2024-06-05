@@ -20,7 +20,7 @@ const authStore = useAuthStore();
       authStore.user.role
     }}</span>
 
-    <perfect-scrollbar style="margin-top: auto">
+    <div style="margin-top: auto">
       <v-list>
         <v-list-item color="secondary" rounded="md">
           <template v-slot:prepend>
@@ -40,7 +40,7 @@ const authStore = useAuthStore();
           <v-list-item-title class="text-subtitle-2"> Logout</v-list-item-title>
         </v-list-item>
       </v-list>
-    </perfect-scrollbar>
+    </div>
   </div>
 </template>
 <style>
