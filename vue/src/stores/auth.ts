@@ -19,6 +19,7 @@ export const useAuthStore = defineStore({
       }).then((res) => res.data);
       // update pinia state
       this.user = user;
+      console.log('user', user);
       // store user details and jwt in local storage to keep user logged in between page refreshes
       localStorage.setItem('user', JSON.stringify(user));
       // redirect to previous url or default to home page
@@ -37,9 +38,13 @@ export const useAuthStore = defineStore({
       // redirect to previous url or default to home page
       router.push(this.returnUrl || '/main/users');
     },
-    logout() {
+    async logout() {
       this.user = null;
       localStorage.removeItem('user');
+      await axiosInstance({
+        method: 'GET',
+        url: '/auth/logout',
+      });
       router.push('/auth/login');
     },
   },
