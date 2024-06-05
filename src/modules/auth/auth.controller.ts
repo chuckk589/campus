@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Post, Req, Session, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { ReqUser, RequestWithUser } from 'src/types/interfaces';
@@ -17,5 +17,11 @@ export class AuthController {
   async register(@Body() payload: { username: string; password: string }): Promise<{ id: number; role: string; token: string }> {
     throw new HttpException('Not implemented', 501);
     return this.authService.register(payload);
+  }
+
+  @Get('logout')
+  async logout(@Session() session: Record<string, any>) {
+    session.destroy();
+    return { status: 'ok' };
   }
 }
