@@ -60,9 +60,11 @@ function validate(values: any, { setErrors }: any) {
         density="comfortable"
         hide-details="auto"
         variant="outlined"
+        autocomplete
         color="primary"
       ></v-text-field>
       <v-text-field
+        autocomplete
         v-model="password"
         :rules="passwordRules"
         label="Password"
