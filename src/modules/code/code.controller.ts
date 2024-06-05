@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Put, Req } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggedInGuard } from '../auth/guards/loggedin.guard';
 import { CodeService } from './code.service';
 import { CreateCodeDto } from './dto/create-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
 import { ReqUser } from 'src/types/interfaces';
 
 @Controller({ version: '1', path: 'code' })
-@UseGuards(JwtAuthGuard)
+@UseGuards(LoggedInGuard)
 export class CodeController {
   constructor(private readonly codeService: CodeService) {}
 

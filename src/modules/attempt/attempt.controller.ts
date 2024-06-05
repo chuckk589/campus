@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { Put, Req } from '@nestjs/common/decorators';
 import { UpdateAnswerDto } from '../answers/dto/update-answer.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggedInGuard } from '../auth/guards/loggedin.guard';
 import { AttemptService } from './attempt.service';
 import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
@@ -9,7 +9,7 @@ import { IServerSideGetRowsRequest } from 'src/types/agGridTypes';
 import { RequestWithUser } from 'src/types/interfaces';
 
 @Controller({ version: '1', path: 'attempt' })
-@UseGuards(JwtAuthGuard)
+@UseGuards(LoggedInGuard)
 export class AttemptController {
   constructor(private readonly attemptService: AttemptService) {}
 

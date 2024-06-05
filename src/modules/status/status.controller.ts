@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggedInGuard } from '../auth/guards/loggedin.guard';
 import { Response } from 'express';
 import { UpdateConfigDto } from './dto/update-config.dto';
 import { StatusService } from './status.service';
@@ -9,7 +9,7 @@ import { Roles } from '../auth/guards/role.guard';
   path: 'status',
   version: '1',
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(LoggedInGuard)
 export class StatusController {
   constructor(private readonly statusService: StatusService) {}
 

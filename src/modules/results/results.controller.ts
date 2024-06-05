@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards, Req } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggedInGuard } from '../auth/guards/loggedin.guard';
 import { ResultsService } from './results.service';
 import { RequestWithUser } from 'src/types/interfaces';
 
@@ -7,7 +7,7 @@ import { RequestWithUser } from 'src/types/interfaces';
   path: 'results',
   version: '1',
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(LoggedInGuard)
 export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 

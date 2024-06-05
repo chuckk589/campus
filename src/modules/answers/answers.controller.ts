@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { Put, Req, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggedInGuard } from '../auth/guards/loggedin.guard';
 import { AnswersService } from './answers.service';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { IServerSideGetRowsRequest } from 'src/types/agGridTypes';
@@ -13,7 +13,7 @@ import { RequestWithUser } from 'src/types/interfaces';
   path: 'answers',
 })
 @Roles(['admin'])
-@UseGuards(JwtAuthGuard)
+@UseGuards(LoggedInGuard)
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 

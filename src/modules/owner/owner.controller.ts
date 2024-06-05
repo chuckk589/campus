@@ -3,7 +3,7 @@ import { RetrieveOwnerDto } from './dto/retrieve-owner.dto';
 import { CreateOwnerDto } from './dto/create-owner.dto';
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Put, Query } from '@nestjs/common';
 import { OwnerService } from './owner.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { LoggedInGuard } from '../auth/guards/loggedin.guard';
 import { Roles } from '../auth/guards/role.guard';
 
 @Controller({
@@ -11,7 +11,7 @@ import { Roles } from '../auth/guards/role.guard';
   version: '1',
 })
 @Roles(['admin'])
-@UseGuards(JwtAuthGuard)
+@UseGuards(LoggedInGuard)
 export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}
 
