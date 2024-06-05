@@ -1,5 +1,17 @@
 version: '3.8'
 services:
+  redis:
+    image: redis:latest
+    restart: always
+    command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
   adminer:
     image: adminer:latest
     restart: unless-stopped
