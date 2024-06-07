@@ -9,11 +9,12 @@ export class RetrieveAttemptAnswerDto {
     this.answered = attemptAnswer.answered;
     this.result = attemptAnswer.finalResult;
     this.question_type = attemptAnswer.answer.question_type.toString();
-    if (role != OwnerRole.ADMIN && attemptAnswer.answer.jsonAnswer) {
+    if (role == OwnerRole.ADMIN || attemptAnswer.attempt.editable || !attemptAnswer.answer.jsonAnswer) {
+      this.disabled = false;
+      this.jsonAnswer = attemptAnswer.answer.jsonAnswer;
+    } else {
       this.jsonAnswer = null;
       this.disabled = true;
-    } else {
-      this.jsonAnswer = attemptAnswer.answer.jsonAnswer;
     }
   }
   id: string;
