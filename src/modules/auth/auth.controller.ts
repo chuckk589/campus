@@ -13,11 +13,11 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
-  @Post('register')
-  async register(@Body() payload: { username: string; password: string }): Promise<{ id: number; role: string; token: string }> {
-    throw new HttpException('Not implemented', 501);
-    return this.authService.register(payload);
-  }
+  // @Post('register')
+  // async register(@Body() payload: { username: string; password: string }): Promise<{ id: number; role: string; token: string }> {
+  //   throw new HttpException('Not implemented', 501);
+  //   return this.authService.register(payload);
+  // }
 
   @Get('logout')
   async logout(@Session() session: Record<string, any>) {
