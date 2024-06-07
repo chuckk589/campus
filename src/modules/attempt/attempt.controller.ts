@@ -7,6 +7,7 @@ import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
 import { IServerSideGetRowsRequest } from 'src/types/agGridTypes';
 import { RequestWithUser } from 'src/types/interfaces';
+import { Roles } from '../auth/guards/role.guard';
 
 @Controller({ version: '1', path: 'attempt' })
 @UseGuards(LoggedInGuard)
@@ -19,6 +20,7 @@ export class AttemptController {
   }
 
   @Put(':id')
+  @Roles(['admin'])
   update(@Param('id') id: string, @Body() updateAttemptDto: UpdateAttemptDto) {
     return this.attemptService.update(+id, updateAttemptDto);
   }
