@@ -18,9 +18,11 @@ import { RestrictionModule } from './modules/restriction/restriction.module';
 // import { TestModule } from './modules/test/test.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OwnerModule } from './modules/owner/owner.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [
+    RedisModule,
     AppConfigModule.forRootAsync(),
     MikroOrmModule.forRoot(ORMOptionsProvider),
     EventEmitterModule.forRoot(),
@@ -38,7 +40,6 @@ import { OwnerModule } from './modules/owner/owner.module';
         level: 'info',
       },
     }),
-    // ServeStaticModule.forRoot({ rootPath: join(__dirname, './', 'public/') }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', '/dist/public/') }),
     UserModule,
     AuthModule,
