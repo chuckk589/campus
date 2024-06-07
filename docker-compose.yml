@@ -47,6 +47,7 @@ services:
         max-size: "50m" 
     environment:
       - NODE_ENV=${NODE_ENV}
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./src/:/app/src/
       - static:/app/dist/public/files
