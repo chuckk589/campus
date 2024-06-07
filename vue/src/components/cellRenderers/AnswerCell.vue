@@ -56,7 +56,6 @@ export default {
         url: `${this.params.url}${this.params.data.id}/ai`,
       })
         .then((res) => {
-          console.log(res.data);
           const qtype = this.params.data.question_type;
           if (qtype == 3) {
             this.$refs.question.querySelector('input[type=text]').value =

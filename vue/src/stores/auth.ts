@@ -19,7 +19,6 @@ export const useAuthStore = defineStore({
       }).then((res) => res.data);
       // update pinia state
       this.user = user;
-      console.log('user', user);
       // store user details and jwt in local storage to keep user logged in between page refreshes
       localStorage.setItem('user', JSON.stringify(user));
       // redirect to previous url or default to home page

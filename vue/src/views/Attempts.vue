@@ -207,25 +207,19 @@ export default {
       });
       const { user } = useAuthStore();
       if (user.role == 'admin') {
-        this.gridApi.setGridOption('rowData', [
-          ...this.columnDefs.splice(
-            7,
-            0,
-            {
-              field: 'editable',
-              headerName: 'Редактируемый',
-              valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
-              filter: false,
-            },
-            {
-              field: 'action',
-              headerName: '',
-              filter: false,
-              sortable: false,
-              cellRenderer: 'AttemptCell',
-            },
-          ),
-        ]);
+        this.columnDefs.splice(7, 0, {
+          field: 'editable',
+          headerName: 'Редактируемый',
+          valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
+          filter: false,
+        });
+        this.columnDefs.push({
+          field: 'action',
+          headerName: '',
+          filter: false,
+          sortable: false,
+          cellRenderer: 'AttemptCell',
+        });
       }
     },
   },

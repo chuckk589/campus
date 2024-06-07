@@ -18,7 +18,6 @@ export default {
   },
   methods: {
     edit() {
-      console.log(this.params);
       this.$emitter.emit('openModal', {
         url: `/attempt/answer/${this.params.data.id}`,
         method: 'PUT',
