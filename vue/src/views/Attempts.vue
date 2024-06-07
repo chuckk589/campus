@@ -35,7 +35,7 @@ import AttemptCell from '@/components/cellRenderers/AttemptCell.vue';
 import AttemptAnswerCell from '@/components/cellRenderers/AttemptAnswerCell.vue';
 import AnswerCell from '@/components/cellRenderers/AnswerCell.vue';
 import PathCell from '@/components/cellRenderers/PathCell.vue';
-
+import { useAuthStore } from '@/stores/auth';
 export default {
   name: 'AttemptsView',
   components: {
@@ -79,6 +79,14 @@ export default {
           sortable: false,
         },
         { field: 'cmid', headerName: 'CMID' },
+
+        {
+          field: 'isProctoring',
+          headerName: 'Прокторинг',
+          filter: false,
+          sortable: false,
+          valueFormatter: (params) => (params.value === true ? 'Да' : 'Нет'),
+        },
         {
           field: 'status',
           headerName: 'Статус',
@@ -91,13 +99,6 @@ export default {
           filter: 'agDateColumnFilter',
           headerName: 'Дата создания',
           valueFormatter: (params) => new Date(params.value).toLocaleString(),
-        },
-        {
-          field: 'action',
-          headerName: '',
-          filter: false,
-          sortable: false,
-          cellRenderer: 'AttemptCell',
         },
       ],
       gridApi: null,
@@ -173,6 +174,7 @@ export default {
     this.$emitter.off('edit-attempt');
     this.$emitter.off('edit-answer');
   },
+
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
@@ -203,6 +205,28 @@ export default {
           }
         });
       });
+      const { user } = useAuthStore();
+      if (user.role == 'admin') {
+        this.gridApi.setGridOption('rowData', [
+          ...this.columnDefs.splice(
+            7,
+            0,
+            {
+              field: 'editable',
+              headerName: 'Редактируемый',
+              valueFormatter: (params) => (params.value ? 'Да' : 'Нет'),
+              filter: false,
+            },
+            {
+              field: 'action',
+              headerName: '',
+              filter: false,
+              sortable: false,
+              cellRenderer: 'AttemptCell',
+            },
+          ),
+        ]);
+      }
     },
   },
 };

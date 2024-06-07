@@ -1,7 +1,6 @@
-import { Collection, Entity, Enum, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Code } from './Code';
 import { CustomBaseEntity } from './CustomBaseEntity';
-import { QuizAnswer } from './QuizAnswer';
 import { QuizAttemptAnswer } from './QuizAttemptAnswer';
 import { QuizResult } from './QuizResult';
 import { User } from './User';
@@ -21,6 +20,7 @@ export enum AttemptParsingState {
 
 @Entity()
 export class QuizAttempt extends CustomBaseEntity {
+  // [EntityRepositoryType]?: QuizAttemptRepository;
   @PrimaryKey()
   id!: number;
 
@@ -57,4 +57,16 @@ export class QuizAttempt extends CustomBaseEntity {
 
   @Enum({ items: () => AttemptParsingState, default: AttemptParsingState.DEFAULT })
   parsingState!: AttemptParsingState;
+
+  @Property({ default: false })
+  isProctoring?: boolean;
+
+  @Property({ default: false })
+  editable?: boolean;
 }
+//TODO:
+// export class QuizAttemptRepository extends EntityRepository<QuizAttempt> {
+//   async findAllProtected(user: ReqUser, body: IServerSideGetRowsRequest) {
+
+//   }
+// }

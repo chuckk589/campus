@@ -37,6 +37,7 @@ export class QuizService {
     quiz.user = existingUser;
     quiz.path = updateQuizDto.path + ';' + updateQuizDto.name;
     quiz.attemptId = updateQuizDto.attempt;
+    quiz.isProctoring = updateQuizDto.isFrame;
     await this.em.persistAndFlush(quiz);
     const token = this.jwtService.sign(
       { id: quiz.id, cmid: quiz.cmid, path: updateQuizDto.name },

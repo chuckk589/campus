@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsString, ValidateNested, IsObject } from 'class-validator';
+import { IsString, ValidateNested, IsObject, IsBoolean } from 'class-validator';
 import { CreateQuizDtoUser } from './create-quiz.dto';
 
 export class UpdateQuizDto {
@@ -19,4 +19,7 @@ export class UpdateQuizDto {
 
   @IsString()
   name?: string;
+
+  @IsBoolean()
+  isFrame?: boolean;
 }

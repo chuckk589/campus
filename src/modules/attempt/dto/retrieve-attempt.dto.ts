@@ -17,6 +17,8 @@ export class RetrieveAttemptDto {
     this.answers = attemptAnswers.map((attemptAnswer) => new RetrieveAttemptAnswerDto(attemptAnswer, role));
     this.path = attempt.path ? attempt.path.split(';') : [];
     this.pendingAmount = attemptAnswers.filter((answer) => !answer.answer.jsonAnswer).length;
+    this.isProctoring = attempt.isProctoring;
+    this.editable = attempt.editable;
   }
   createdAt: Date;
   id: string;
@@ -29,4 +31,6 @@ export class RetrieveAttemptDto {
   userName: string;
   answers: RetrieveAttemptAnswerDto[];
   pendingAmount: number;
+  isProctoring: boolean;
+  editable: boolean;
 }

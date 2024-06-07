@@ -87,6 +87,7 @@ export class AttemptService {
   async update(id: number, updateAttemptDto: UpdateAttemptDto) {
     const attempt = await this.em.findOneOrFail(QuizAttempt, id, { populate: ['user', 'attemptAnswers.answer'] });
     attempt.attemptStatus = updateAttemptDto.status;
+    attempt.editable = updateAttemptDto.editable;
     await this.em.persistAndFlush(attempt);
     return new RetrieveAttemptDto(attempt);
   }

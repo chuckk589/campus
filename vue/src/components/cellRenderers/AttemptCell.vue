@@ -31,6 +31,22 @@ export default {
             value: this.params.data.status,
             options: this.$ctable.quiz_status,
           },
+          {
+            key: 'editable',
+            label: 'Редактируемый',
+            type: 'select',
+            value: this.params.data.editable,
+            options: [
+              {
+                value: true,
+                title: 'Да',
+              },
+              {
+                value: false,
+                title: 'Нет',
+              },
+            ],
+          },
         ],
       });
     },
