@@ -10,7 +10,7 @@ import { redisStoreOptions } from 'src/configs/redis.store.config';
   providers: [
     {
       provide: REDIS,
-      useValue: new IORedis('redis://redis:6379', { lazyConnect: false }),
+      useValue: new IORedis(process.env.REDIS_URL, redisConnectionOptions),
     },
 
     {
