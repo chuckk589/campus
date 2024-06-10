@@ -116,8 +116,6 @@ export default {
           color: 'info',
           text: `Добавлено: ${res.data.result.success} новых шаблонов\nОбновлено: ${res.data.result.updated}\nОшибок в файлах: ${res.data.result.errored}`,
         });
-        // this.rowData = res.data;
-        // this.gridApi.setRowData(this.rowData);
       });
     },
     filterPending() {

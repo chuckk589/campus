@@ -67,15 +67,15 @@ export default {
           headerName: 'Кол-во вопросов',
         },
         {
-          field: 'pendingAmount',
+          field: 'unanswered',
           headerName: 'Без ответа',
-          filter: false,
-          sortable: false,
+          filter: 'agNumberColumnFilter',
         },
         {
           field: 'path',
           headerName: 'Категории',
           cellRenderer: 'PathCell',
+          filter: false,
           sortable: false,
         },
         { field: 'cmid', headerName: 'CMID' },
@@ -84,7 +84,6 @@ export default {
           field: 'isProctoring',
           headerName: 'Прокторинг',
           filter: false,
-          sortable: false,
           valueFormatter: (params) => (params.value === true ? 'Да' : 'Нет'),
         },
         {
@@ -108,7 +107,7 @@ export default {
         filter: 'agTextColumnFilter',
         floatingFilter: true,
         filterParams: {
-          suppressAndOrCondition: true,
+          maxNumConditions: 1,
         },
       },
       serverSideDatasource: null,
@@ -187,6 +186,7 @@ export default {
           }).then((res) => {
             params.success({
               rowData: res.data.rows,
+              // rowCount: res.data.lastRow,
             });
           });
         },
@@ -219,6 +219,10 @@ export default {
           filter: false,
           sortable: false,
           cellRenderer: 'AttemptCell',
+        });
+        this.detailCellRendererParams.detailGridOptions.columnDefs.push({
+          field: 'updatedBy',
+          headerName: 'Кем обновлено',
         });
       }
     },

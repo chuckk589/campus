@@ -16,6 +16,7 @@ export class RetrieveAttemptAnswerDto {
       this.jsonAnswer = null;
       this.disabled = true;
     }
+    this.updatedBy = attemptAnswer.answer.updatedBy?.username;
   }
   id: string;
   nativeId: string;
@@ -25,4 +26,5 @@ export class RetrieveAttemptAnswerDto {
   result: string;
   question_type: string;
   disabled = false;
+  updatedBy: string;
 }
