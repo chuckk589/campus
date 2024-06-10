@@ -75,7 +75,6 @@ export default {
           field: 'path',
           headerName: 'Категории',
           cellRenderer: 'PathCell',
-          filter: false,
           sortable: false,
         },
         { field: 'cmid', headerName: 'CMID' },

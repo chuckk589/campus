@@ -7,7 +7,6 @@ export class AgGridORMConverter {
     return entries.reduce((acc, [key, value]) => {
       const { logic, ...rest } = this.resolveKey(value);
       // console.log(logic, rest, key);
-      console.log(dtoClass.prototype.resolveColumn(key, rest));
       const { query, aggregated } = dtoClass.prototype.resolveColumn(key, rest);
       const target = {
         query: logic ? { [logic]: query } : query,
