@@ -1,4 +1,4 @@
-import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, Filter, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Code } from './Code';
 import { CustomBaseEntity } from './CustomBaseEntity';
 import { QuizAttemptAnswer } from './QuizAttemptAnswer';
@@ -63,6 +63,9 @@ export class QuizAttempt extends CustomBaseEntity {
 
   @Property({ default: false })
   editable?: boolean;
+
+  @Property({ persist: false })
+  unanswered: number;
 }
 //TODO:
 // export class QuizAttemptRepository extends EntityRepository<QuizAttempt> {

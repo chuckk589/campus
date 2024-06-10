@@ -1,4 +1,3 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { HttpException, Injectable } from '@nestjs/common';
 import { UpdateAnswerDto } from '../answers/dto/update-answer.dto';
 import { QuizAttempt } from '../mikroorm/entities/QuizAttempt';
@@ -14,6 +13,7 @@ import { IServerSideGetRowsRequest } from 'src/types/agGridTypes';
 import { AgGridORMConverter } from 'src/types/agGridORM';
 import { Owner, OwnerRole } from '../mikroorm/entities/Owner';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { EntityManager } from '@mikro-orm/mysql';
 @Injectable()
 export class AttemptService {
   constructor(
@@ -27,34 +27,21 @@ export class AttemptService {
     const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, { id }, { populate: ['answer'] });
     return await this.openAiService.getAIResponse(attemptAnswer.answer.html, attemptAnswer.answer.question_type as QuestionType);
   }
-  //TODO: consider using role interceptor
   async lazyload(body: IServerSideGetRowsRequest, user: ReqUser) {
-    const agFilter = AgGridORMConverter.convertToWhereQuery(body.filterModel, AttemptDto.resolveColumnName);
-    //return all attempts associated with owner who created them, or all attempts if user is admin
-    const attempts = await this.em.findAndCount(
-      QuizAttempt,
-      {
-        $and: agFilter.$and.concat([
-          {
-            user: { $ne: null },
-            ...(user.role == OwnerRole.ADMIN
-              ? {}
-              : {
-                  code: { createdBy: { id: user.id } },
-                }),
-          },
-        ]),
-      },
-      {
-        populate: ['user', 'attemptAnswers.answer'],
-        limit: body.endRow - body.startRow,
-        offset: body.startRow,
-        orderBy: body.sortModel.map((sort) => AttemptDto.resolveColumnName(sort.colId)(sort.sort)) as any,
-      },
-    );
+    const qb = this.em.createQueryBuilder(QuizAttempt, 'qat');
+    qb.select(['qat.*', 'SUM(CASE WHEN qa.json_answer is NULL THEN 1 ELSE 0 END) as unanswered'])
+      .leftJoin('qat.attemptAnswers', 'qaa')
+      .leftJoin('qaa.answer', 'qa')
+      .where({ user: { $ne: null }, ...(user.role == OwnerRole.ADMIN ? {} : { code: { createdBy: { id: user.id } } }) })
+      .groupBy('qat.id')
+      .limit(body.endRow - body.startRow)
+      .offset(body.startRow);
+    AgGridORMConverter.ApplyFilters(qb, body.filterModel, AttemptDto);
+    AgGridORMConverter.ApplySort(qb, body.sortModel, AttemptDto);
+    const attempts = await qb.getResultList();
+    await this.em.populate(attempts, ['user', 'attemptAnswers.answer.updatedBy']);
     return {
-      rows: attempts[0].map((attempt: QuizAttempt) => new RetrieveAttemptDto(attempt, user.role as OwnerRole)),
-      lastRow: attempts[1],
+      rows: attempts.map((attempt: QuizAttempt) => new RetrieveAttemptDto(attempt, user.role as OwnerRole)),
     };
   }
 
@@ -68,7 +55,6 @@ export class AttemptService {
       this.logger.warn(`User ${user.id} attempted to update answer ${attemptAnswerId} but is not the owner of the code`);
       throw new HttpException('Insufficient permissions', 405);
     }
-
     if (attemptAnswer.answer) {
       try {
         JSON.parse(updateAnswerDto.json);
@@ -78,6 +64,7 @@ export class AttemptService {
       attemptAnswer.answer.jsonAnswer = updateAnswerDto.json;
       attemptAnswer.answer.updatedBy = this.em.getReference(Owner, user.id);
       await this.em.persistAndFlush(attemptAnswer);
+      await this.em.populate(attemptAnswer, ['answer.updatedBy']);
       return new RetrieveAttemptAnswerDto(attemptAnswer);
     } else {
       throw new HttpException('Answer not found', 404);

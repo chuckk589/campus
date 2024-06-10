@@ -248,10 +248,22 @@ export class HTMLCampusParser {
   }
 }
 
-export type ColumnNameResolveFunc<Entity extends object = object> = (columnName: string) => (value: any) => FilterQuery<Entity>;
+// export type ColumnNameResolveFunc<Entity extends object = object> = (
+//   columnName: string,
+// ) => (value: any) => { query: FilterQuery<Entity>; type: 'having' | 'where' };
 
-export function DtoFactory<Entity extends object>(resolveColumnName: ColumnNameResolveFunc<Entity>) {
-  return class {
-    static resolveColumnName = resolveColumnName;
-  };
+// export function DtoFactory<Entity extends object>(resolveColumnName: ColumnNameResolveFunc<Entity>) {
+//   return class {
+//     static resolveColumnName = resolveColumnName;
+//   };
+// }
+
+export class BaseDto {
+  private columns: Record<string, { resolve: (value: any) => void; aggregated: boolean }>;
+  resolveColumn(column: string, value: any) {
+    if (this.columns[column]) {
+      return { query: this.columns[column].resolve(value), aggregated: this.columns[column].aggregated };
+    }
+    return { query: { [column]: value }, aggregated: false };
+  }
 }
