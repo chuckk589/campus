@@ -4,7 +4,7 @@ import 'dotenv/config';
 const MikroORMOptions: MikroOrmModuleOptions = {
   type: 'mysql',
   allowGlobalContext: true,
-  ...(process.env.NODE_ENV === 'dev' ? { debug: true, logger: console.log.bind(console) } : {}),
+  ...(process.env.NODE_ENV === 'dev' ? { debug: false, logger: console.log.bind(console) } : {}),
   entities: ['./dist/modules/mikroorm/entities/'],
   entitiesTs: ['./src/modules/mikroorm/entities/'],
   clientUrl:
