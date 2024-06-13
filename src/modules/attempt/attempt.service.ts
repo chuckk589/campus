@@ -2,9 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { UpdateAnswerDto } from '../answers/dto/update-answer.dto';
 import { QuizAttempt } from '../mikroorm/entities/QuizAttempt';
 import { QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
-import { RetrieveAttemptAnswerDto } from './dto/retrieve-attempt-answer.dto';
 import { RetrieveAttemptDto } from './dto/retrieve-attempt.dto';
-import { UpdateAttemptAnswerDto } from './dto/update-attempt-answer.dto';
 import { UpdateAttemptDto } from './dto/update-attempt.dto';
 import { QuestionType, ReqUser } from 'src/types/interfaces';
 import { OpenAiService } from 'src/libs/openai/openai.service';
@@ -40,9 +38,7 @@ export class AttemptService {
     AgGridORMConverter.ApplySort(qb, body.sortModel, AttemptDto);
     const attempts = await qb.getResultList();
     await this.em.populate(attempts, ['user', 'attemptAnswers.answer.updatedBy']);
-    return {
-      rows: attempts.map((attempt: QuizAttempt) => new RetrieveAttemptDto(attempt, user.role as OwnerRole)),
-    };
+    return { rows: attempts };
   }
 
   async updatePattern(user: ReqUser, attemptAnswerId: number, updateAnswerDto: UpdateAnswerDto) {
@@ -65,7 +61,7 @@ export class AttemptService {
       attemptAnswer.answer.updatedBy = this.em.getReference(Owner, user.id);
       await this.em.persistAndFlush(attemptAnswer);
       await this.em.populate(attemptAnswer, ['answer.updatedBy']);
-      return new RetrieveAttemptAnswerDto(attemptAnswer);
+      return attemptAnswer;
     } else {
       throw new HttpException('Answer not found', 404);
     }
@@ -79,28 +75,10 @@ export class AttemptService {
     return new RetrieveAttemptDto(attempt);
   }
 
-  // async findAll(user: ReqUser) {
-  //   console.log(user);
-  //   //return all attempts associated with owner who created them, or all attempts if user is admin
-  //   const attempts = await this.em.find(
-  //     QuizAttempt,
-  //     {
-  //       user: { $ne: null },
-  //       ...(user.role == OwnerRole.ADMIN
-  //         ? {}
-  //         : {
-  //             code: { createdBy: { id: user.id } },
-  //           }),
-  //     },
-  //     { populate: ['user', 'attemptAnswers.answer', 'code.createdBy'] },
-  //   );
-  //   return attempts.map((attempt) => new RetrieveAttemptDto(attempt));
+  // async updateAnswer(user: ReqUser, id: number, updateAttemptAnswerDto: UpdateAttemptAnswerDto) {
+  //   const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, id, { populate: ['answer'] });
+  //   updateAttemptAnswerDto.answered !== undefined ? (attemptAnswer.answered = updateAttemptAnswerDto.answered) : null;
+  //   await this.em.persistAndFlush(attemptAnswer);
+  //   return new RetrieveAttemptAnswerDto(attemptAnswer, user);
   // }
-
-  async updateAnswer(id: number, updateAttemptAnswerDto: UpdateAttemptAnswerDto) {
-    const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, id, { populate: ['answer'] });
-    updateAttemptAnswerDto.answered !== undefined ? (attemptAnswer.answered = updateAttemptAnswerDto.answered) : null;
-    await this.em.persistAndFlush(attemptAnswer);
-    return new RetrieveAttemptAnswerDto(attemptAnswer);
-  }
 }
