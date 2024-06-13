@@ -21,7 +21,7 @@ export class OwnerController {
   }
 
   @Get()
-  findAll(): Promise<RetrieveOwnerDto> {
+  findAll(): Promise<RetrieveOwnerDto[]> {
     return this.ownerService.findAll();
   }
 
