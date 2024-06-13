@@ -17,7 +17,6 @@ export enum AttemptParsingState {
   ABORTED = 'aborted',
   DEFAULT = 'default',
 }
-
 @Entity()
 export class QuizAttempt extends CustomBaseEntity {
   // [EntityRepositoryType]?: QuizAttemptRepository;

@@ -19,6 +19,10 @@ export class ConfigSeeder extends Seeder {
           ',',
         )} ON DUPLICATE KEY UPDATE name=name;`,
       );
+    await em.getConnection().execute(
+      `INSERT INTO permission (created_at, updated_at, name, display_name) VALUES 
+        (now(), now(),'quiz_edit_own', 'Редактирование своих тестов')`,
+    );
     //password: 123
     await em
       .getConnection()

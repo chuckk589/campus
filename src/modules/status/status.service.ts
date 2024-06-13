@@ -12,6 +12,7 @@ import fs from 'fs';
 import { User } from '../mikroorm/entities/User';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OwnerRole } from '../mikroorm/entities/Owner';
+import { Permission } from '../mikroorm/entities/Permission';
 
 @Injectable()
 export class StatusService {
@@ -71,6 +72,7 @@ export class StatusService {
   }
 
   async findAll(): Promise<Record<string, RetrieveStatusDto[]>> {
+    const permissions = await this.em.find(Permission, {});
     const code_statuses = {
       active: 'Активный',
       used: 'Использован',
@@ -92,6 +94,9 @@ export class StatusService {
     };
     const chatgpt_models = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-vision-preview'];
     return {
+      permissions: permissions.map(
+        (permission) => new RetrieveStatusDto({ value: permission.id.toString(), title: permission.displayName }),
+      ),
       owner_role: Object.values(OwnerRole).map((role) => new RetrieveStatusDto({ value: role, title: owner_roles[role] })),
       code_status: Object.values(CodeStatus).map((status) => new RetrieveStatusDto({ value: status, title: code_statuses[status] })),
       quiz_status: Object.values(AttemptStatus).map((status) => new RetrieveStatusDto({ value: status, title: quiz_statuses[status] })),

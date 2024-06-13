@@ -21,7 +21,7 @@ export class OwnerService {
   }
 
   async findAll(): Promise<RetrieveOwnerDto[]> {
-    const owners = await this.em.find(Owner, {});
+    const owners = await this.em.find(Owner, {}, { populate: ['permissions.permission'] });
     return owners.map((owner) => new RetrieveOwnerDto(owner));
   }
 
@@ -35,7 +35,7 @@ export class OwnerService {
   }
 
   async remove(ids: number[]): Promise<number[]> {
-    const owners = await this.em.find(Owner, { id: { $in: ids } });
+    const owners = await this.em.find(Owner, { id: { $in: ids } }, { populate: ['permissions'] });
     owners.map((owner) => this.em.remove(owner));
     await this.em.flush();
     await this.em.getRepository(Owner).clearSession(this.store, ids);

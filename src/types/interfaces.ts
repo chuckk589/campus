@@ -11,7 +11,7 @@ export interface QuizAnswerRequest extends Request {
 }
 export type RequestWithVersion = Request & { headers: { 'x-version': string } } & QuizAnswerRequest;
 export type RequestWithUser = Request & { user: ReqUser };
-export type ReqUser = { id: number; username: string; role: string };
+export type ReqUser = { id: number; username: string; role: string; permissions: string[] };
 export type QuestionType = 0 | 1 | 2 | 3;
 export type QuestionPayload<T> = T extends 0 | 2
   ? { subject: string; options: string[] }
