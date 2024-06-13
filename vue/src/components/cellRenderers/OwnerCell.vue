@@ -44,6 +44,12 @@ export default {
             value: this.params.data.credentials,
           },
           {
+            key: 'permissions',
+            label: 'Права',
+            type: 'chips',
+            value: this.params.data.permissions.map((p) => p.id),
+          },
+          {
             key: 'password',
             label: 'Пароль',
             type: 'password',

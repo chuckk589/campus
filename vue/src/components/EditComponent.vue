@@ -62,6 +62,16 @@
               :type="field.show ? 'text' : 'password'"
               @click:append-inner="field.show = !field.show"
             />
+            <v-select
+              v-else-if="field.type == 'chips'"
+              :key="'c' + index"
+              clearable
+              chips
+              label="Права"
+              :items="this.$ctable.permissions"
+              multiple
+              v-model="field.value"
+            ></v-select>
             <v-text-field
               v-else
               density="comfortable"
