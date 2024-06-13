@@ -1,4 +1,18 @@
-import { OmitType } from '@nestjs/mapped-types';
-import { CreateOwnerDto } from './create-owner.dto';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UpdateOwnerDto extends OmitType(CreateOwnerDto, ['username']) {}
+export class UpdateOwnerDto {
+  @IsString()
+  @IsOptional()
+  credentials: string;
+  @IsString()
+  @IsOptional()
+  email: string;
+  @IsString()
+  @IsOptional()
+  password: string;
+  @IsString({ each: true })
+  permissions: string[];
+  @IsString()
+  @IsOptional()
+  role: string;
+}
