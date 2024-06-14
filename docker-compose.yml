@@ -19,6 +19,7 @@ services:
       ADMINER_DEFAULT_SERVER: mysqldb
     ports:
       - 8080:8080
+    command: ["php", "-d", "post_max_size=500M", "-d", "upload_max_filesize=500M", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]
   mysqldb:
     image: mysql:5.7
     restart: unless-stopped
