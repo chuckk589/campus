@@ -10,7 +10,12 @@
         >Добавить код</v-btn
       >
 
-      <v-btn @click="deleteCodes" size="small" color="error" variant="outlined"
+      <v-btn
+        @click="deleteCodes"
+        size="small"
+        color="error"
+        variant="outlined"
+        v-if="store.user?.role == 'admin'"
         >Удалить выбранное</v-btn
       >
     </div>
@@ -41,6 +46,7 @@
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 import CodeCell from '../components/cellRenderers/CodeCell.vue';
+import { useAuthStore } from '@/stores/auth';
 export default {
   name: 'CodesView',
   components: {
@@ -51,13 +57,6 @@ export default {
   data() {
     return {
       columnDefs: [
-        {
-          headerName: 'ID',
-          field: 'id',
-          maxWidth: 150,
-          headerCheckboxSelection: true,
-          checkboxSelection: true,
-        },
         { field: 'value', headerName: 'Значение' },
         {
           field: 'status',
@@ -111,12 +110,24 @@ export default {
     this.$emitter.off('delete-code');
     this.$emitter.off('new-code');
   },
+  computed: {
+    store: () => useAuthStore(),
+  },
   methods: {
     onGridReady(params) {
       this.gridApi = params.api;
       this.$http({ method: 'GET', url: `/v1/code/` }).then((res) => {
         this.rowData = res.data;
         this.gridApi.setGridOption('rowData', this.rowData);
+        if (this.store.user.role == 'admin') {
+          this.columnDefs.unshift({
+            headerName: 'ID',
+            field: 'id',
+            maxWidth: 150,
+            headerCheckboxSelection: true,
+            checkboxSelection: true,
+          });
+        }
       });
       this.$emitter.on('delete-code', (ids) => {
         this.$http({
