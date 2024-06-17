@@ -1,3 +1,4 @@
+import tracer from './tracer';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -9,6 +10,7 @@ import session from 'express-session';
 import passport from 'passport';
 
 async function bootstrap() {
+  await tracer.start();
   const app = await NestFactory.create(AppModule);
 
   const redisStore: RedisStore = app.get(REDIS_STORE);

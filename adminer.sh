@@ -10,4 +10,4 @@ if [ -n "$rule" ]; then
     ufw --force delete $rule
 fi
 #add new rule
-ufw route allow proto tcp from $ip to $local_ip port 8080 comment 'adminer'
+ufw route allow proto tcp from $ip to $local_ip port 8081 comment 'adminer'
