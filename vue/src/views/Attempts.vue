@@ -125,6 +125,7 @@ export default {
               field: 'nativeId',
               cellRenderer: 'agGroupCellRenderer',
               headerName: 'ID',
+              maxWidth: 150,
               valueFormatter: (params) => +params.value + 1,
               comparator: (valueA, valueB) => valueA - valueB,
             },
@@ -134,9 +135,12 @@ export default {
               valueFormatter: (params) =>
                 params.data.disabled ? '*****' : params.value,
               cellStyle: (params) => {
-                if (params.data.disabled || params.data.jsonAnswer) {
+                if (params.data.result == 'success') {
                   return { backgroundColor: 'rgba(0, 128, 0, 0.1)' };
-                } else {
+                } else if (
+                  params.data.result == 'failed' ||
+                  !params.data.jsonAnswer
+                ) {
                   return { backgroundColor: 'rgba(255, 0, 0, 0.1)' };
                 }
               },
@@ -144,6 +148,7 @@ export default {
             {
               field: 'result',
               headerName: 'Результат',
+              maxWidth: 150,
               valueFormatter: (params) =>
                 this.$ctable.que_result.find((c) => c.value == params.value)
                   ?.title,
@@ -222,6 +227,7 @@ export default {
         this.detailCellRendererParams.detailGridOptions.columnDefs.push({
           field: 'updatedBy',
           headerName: 'Кем обновлено',
+          maxWidth: 200,
         });
       }
     },
