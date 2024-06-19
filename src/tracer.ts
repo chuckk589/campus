@@ -7,7 +7,7 @@ import * as opentelemetry from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
 const exporterOptions = {
-  url: 'http://localhost:4318/v1/traces',
+  url: 'otel-collector://otel-collector:4318/v1/traces',
 };
 
 const traceExporter = new OTLPTraceExporter(exporterOptions);
