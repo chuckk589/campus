@@ -4,7 +4,7 @@ import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentation
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { Resource } from '@opentelemetry/resources';
 import * as opentelemetry from '@opentelemetry/sdk-node';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+// import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 
 const exporterOptions = {
   url: 'otel-collector://otel-collector:4318/v1/traces',
@@ -19,9 +19,11 @@ const sdk = new opentelemetry.NodeSDK({
     }),
   ],
   resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'Campus-App',
+    'service.name': 'Campus-App',
   }),
 });
+
+sdk.start();
 
 // gracefully shut down the SDK on process exit
 process.on('SIGTERM', () => {
