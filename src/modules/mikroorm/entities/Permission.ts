@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, ManyToOne, Property, OneToOne } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ManyToOne, Property, OneToOne, Unique } from '@mikro-orm/core';
 import { CustomBaseEntity } from './CustomBaseEntity';
 import { User } from './User';
 
@@ -8,6 +8,7 @@ export class Permission extends CustomBaseEntity {
   id!: number;
 
   @Property()
+  @Unique()
   name?: string;
 
   @Property()
