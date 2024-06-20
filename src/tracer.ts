@@ -3,7 +3,6 @@ import { JaegerPropagator } from '@opentelemetry/propagator-jaeger';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
-import * as process from 'process';
 import { CollectorTraceExporter, CollectorMetricExporter } from '@opentelemetry/exporter-collector-grpc';
 import { HttpTraceContextPropagator } from '@opentelemetry/core/build/src/trace/HttpTraceContextPropagator';
 import { HttpBaggagePropagator } from '@opentelemetry/core/build/src/baggage/propagation/HttpBaggagePropagator';
