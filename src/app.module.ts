@@ -20,6 +20,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OwnerModule } from './modules/owner/owner.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { PrometheusModule, makeCounterProvider, makeGaugeProvider } from '@willsoto/nestjs-prometheus';
+import { MetricsMiddleware } from './common/metricsMiddleware';
 
 @Module({
   imports: [
@@ -56,24 +57,26 @@ import { PrometheusModule, makeCounterProvider, makeGaugeProvider } from '@wills
     PrometheusModule.register({
       path: '/app-metrics',
       defaultMetrics: {
-        enabled: true,
-        // See https://github.com/siimon/prom-client#configuration
-        config: {},
+        enabled: false,
       },
     }),
     // TestModule,
   ],
   controllers: [],
   providers: [
-    // makeCounterProvider({
-    //   name: 'count',
-    //   help: 'metric_help',
-    //   labelNames: ['method', 'origin'] as string[],
-    // }),
-    // makeGaugeProvider({
-    //   name: 'gauge',
-    //   help: 'metric_help',
-    // }),
+    makeCounterProvider({
+      name: 'count',
+      help: 'metric_help',
+      labelNames: ['method', 'origin'] as string[],
+    }),
+    makeGaugeProvider({
+      name: 'gauge',
+      help: 'metric_help',
+    }),
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MetricsMiddleware).forRoutes('*');
+  }
+}
