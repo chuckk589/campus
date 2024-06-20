@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AppConfigModule } from './modules/app-config/app-config.module';
 import { LoggerModule } from 'nestjs-pino';
@@ -19,6 +19,7 @@ import { RestrictionModule } from './modules/restriction/restriction.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OwnerModule } from './modules/owner/owner.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { PrometheusModule, makeCounterProvider, makeGaugeProvider } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
@@ -52,9 +53,27 @@ import { RedisModule } from './modules/redis/redis.module';
     AxiosRetryModule,
     RestrictionModule,
     OwnerModule,
+    PrometheusModule.register({
+      path: '/app-metrics',
+      defaultMetrics: {
+        enabled: true,
+        // See https://github.com/siimon/prom-client#configuration
+        config: {},
+      },
+    }),
     // TestModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    // makeCounterProvider({
+    //   name: 'count',
+    //   help: 'metric_help',
+    //   labelNames: ['method', 'origin'] as string[],
+    // }),
+    // makeGaugeProvider({
+    //   name: 'gauge',
+    //   help: 'metric_help',
+    // }),
+  ],
 })
 export class AppModule {}
