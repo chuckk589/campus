@@ -103,7 +103,7 @@ services:
       - ./etc/promtail-local.yaml:/etc/promtail/promtail-local.yaml
       - ./data/logs:/app/logs
     depends_on:
-      - nestjs-example
+      - app
       - loki
   volume_exporter:
     image: mnadeem/volume_exporter
