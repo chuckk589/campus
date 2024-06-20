@@ -19,6 +19,7 @@ import { RestrictionModule } from './modules/restriction/restriction.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OwnerModule } from './modules/owner/owner.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { OpenTelemetryModule } from 'nestjs-otel';
 
 @Module({
   imports: [
@@ -52,7 +53,14 @@ import { RedisModule } from './modules/redis/redis.module';
     AxiosRetryModule,
     RestrictionModule,
     OwnerModule,
-    // TestModule,
+    OpenTelemetryModule.forRoot({
+      metrics: {
+        hostMetrics: true,
+        apiMetrics: {
+          enable: true,
+        },
+      },
+    }),
   ],
   controllers: [],
   providers: [],
