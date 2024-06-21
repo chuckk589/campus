@@ -42,7 +42,7 @@ export class MetricsMiddleware implements NestMiddleware {
       this.customDurationGauge.labels(req.method, req.url, (duration / 1000).toString()).set(duration);
 
       // Incrementing the custom errors counter based on the response status code
-      this.customErrorsCounter.labels(req.method, req.url, res.status.toString()).inc();
+      this.customErrorsCounter.labels(req.method, req.url, res.statusCode.toString()).inc();
     });
     // Continuing with the middleware chain
     next();
