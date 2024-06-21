@@ -22,6 +22,8 @@ import { RedisModule } from './modules/redis/redis.module';
 import { PrometheusModule, makeCounterProvider, makeGaugeProvider, makeHistogramProvider } from '@willsoto/nestjs-prometheus';
 import { MetricsMiddleware } from './common/metricsMiddleware';
 import { HttpLoggingInterceptor } from './common/http-logging.interceptor';
+// import { AppController } from './app.controller';
+// import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -55,7 +57,7 @@ import { HttpLoggingInterceptor } from './common/http-logging.interceptor';
     AxiosRetryModule,
     RestrictionModule,
     OwnerModule,
-    PrometheusModule.register(),
+    PrometheusModule.register({}),
     // TestModule,
   ],
   controllers: [],
