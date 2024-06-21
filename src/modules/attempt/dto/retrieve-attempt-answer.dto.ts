@@ -13,7 +13,7 @@ export class RetrieveAttemptAnswerDto {
     this.nativeId = attemptAnswer.nativeId.toString();
     this.html = attemptAnswer.answer.html;
     this.answered = attemptAnswer.answered;
-    this.result = attemptAnswer.finalResult;
+    this.state = attemptAnswer.answer.state;
     this.question_type = attemptAnswer.answer.question_type.toString();
     this.updatedBy = attemptAnswer.answer.updatedBy?.username;
     this.disabled = showJson ? false : true;
@@ -24,7 +24,7 @@ export class RetrieveAttemptAnswerDto {
   html: string;
   jsonAnswer: string;
   answered: boolean;
-  result: string;
+  state: string;
   question_type: string;
   disabled = false;
   updatedBy: string;

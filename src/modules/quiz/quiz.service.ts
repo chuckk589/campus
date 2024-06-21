@@ -7,10 +7,10 @@ import { AttemptParsingState, AttemptStatus, QuizAttempt } from '../mikroorm/ent
 import { User } from '../mikroorm/entities/User';
 import { CreateQuizDto, CreateQuizDtoUser } from './dto/create-quiz.dto';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { QuestionResult, QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
+import { QuizAttemptAnswer } from '../mikroorm/entities/QuizAttemptAnswer';
 import { HTMLCampusParser } from 'src/types/interfaces';
 import { JSDOM } from 'jsdom';
-import { QuizAnswer } from '../mikroorm/entities/QuizAnswer';
+import { QuestionState, QuizAnswer } from '../mikroorm/entities/QuizAnswer';
 import { Config } from '../mikroorm/entities/Config';
 import { FinishQuizDto } from './dto/finish-quiz.dto';
 import { QuizResult } from '../mikroorm/entities/QuizResult';
@@ -46,14 +46,14 @@ export class QuizService {
     return token;
   }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
-    const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers'] });
+    const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers.answer'] });
     if (quiz.result) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
     const answers = quiz.attemptAnswers.getItems();
-    answers.forEach((answer) => {
-      if (finishQuizDto.correctQuestions.find((item) => +item == answer.nativeId)) {
-        answer.finalResult = QuestionResult.SUCCESS;
+    answers.forEach((attemptAnswer) => {
+      if (finishQuizDto.correctQuestions.find((item) => +item == attemptAnswer.nativeId)) {
+        attemptAnswer.answer.state = QuestionState.CORRECT;
       } else {
-        answer.finalResult = QuestionResult.FAILED;
+        attemptAnswer.answer.state = QuestionState.INCORRECT;
       }
     });
     quiz.attemptStatus = AttemptStatus.FINISHED;
@@ -121,6 +121,7 @@ export class QuizService {
 
     const attemptAnswer = quiz.attemptAnswers.getItems().find((item) => item.nativeId == +questionNativeId);
     if (!attemptAnswer || !attemptAnswer.answer) return { status: HttpStatus.NOT_FOUND, error: 'DISASTER' };
+    if (attemptAnswer.answer.state == QuestionState.INCORRECT) return { status: HttpStatus.NO_CONTENT, error: 'NOANSWER' };
     if (attemptAnswer.answer.jsonAnswer) {
       attemptAnswer.answered = true;
       const finished = quiz.attemptAnswers.getItems().every((item) => item.answered);
