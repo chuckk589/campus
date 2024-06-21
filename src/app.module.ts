@@ -90,9 +90,6 @@ import { HttpLoggingInterceptor } from './common/http-logging.interceptor';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(HttpLoggingInterceptor)
-      .exclude({ path: 'metrics', method: RequestMethod.GET }, { path: 'assets', method: RequestMethod.GET })
-      .forRoutes('*');
+    consumer.apply(HttpLoggingInterceptor).exclude({ path: 'metrics', method: RequestMethod.GET }, 'assets/(.*)').forRoutes('*');
   }
 }
