@@ -135,10 +135,10 @@ export default {
               valueFormatter: (params) =>
                 params.data.disabled ? '*****' : params.value,
               cellStyle: (params) => {
-                if (params.data.result == 'success') {
+                if (params.data.status == 'correct') {
                   return { backgroundColor: 'rgba(0, 128, 0, 0.1)' };
                 } else if (
-                  params.data.result == 'failed' ||
+                  params.data.status == 'incorrect' ||
                   !params.data.jsonAnswer
                 ) {
                   return { backgroundColor: 'rgba(255, 0, 0, 0.1)' };
@@ -146,8 +146,8 @@ export default {
               },
             },
             {
-              field: 'result',
-              headerName: 'Результат',
+              field: 'state',
+              headerName: 'Статус',
               maxWidth: 150,
               valueFormatter: (params) =>
                 this.$ctable.que_result.find((c) => c.value == params.value)

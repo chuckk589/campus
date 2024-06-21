@@ -73,6 +73,12 @@ export default {
 
         { field: 'question_type', headerName: 'Тип', maxWidth: 100 },
         { field: 'jsonAnswer', headerName: 'JSON', sortable: false },
+        {
+          field: 'state',
+          headerName: 'Статус',
+          valueFormatter: (params) =>
+            this.$ctable.que_result.find((c) => c.value == params.value)?.title,
+        },
         { field: 'updatedBy', headerName: 'Заполнен' },
         {
           field: 'createdAt',
