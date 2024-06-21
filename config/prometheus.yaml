@@ -4,7 +4,7 @@ scrape_configs:
   - job_name: 'prometheus'
     scrape_interval: 5s
     static_configs:
-      targets: ['prometheus:9090']
+      - targets: ['prometheus:9090']
     metrics_path: '/tam-metrics'
   - job_name: 'node-exporter'
     static_configs:
