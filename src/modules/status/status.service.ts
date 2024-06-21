@@ -6,13 +6,13 @@ import { RetrieveStatusDto } from './dto/retrieve-status.dto';
 import { UpdateConfigDto } from './dto/update-config.dto';
 import { Response } from 'express';
 import { AttemptStatus, QuizAttempt } from '../mikroorm/entities/QuizAttempt';
-import { QuestionResult } from '../mikroorm/entities/QuizAttemptAnswer';
 import JSZip from 'jszip';
 import fs from 'fs';
 import { User } from '../mikroorm/entities/User';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OwnerRole } from '../mikroorm/entities/Owner';
 import { Permission } from '../mikroorm/entities/Permission';
+import { QuestionState } from '../mikroorm/entities/QuizAnswer';
 
 @Injectable()
 export class StatusService {
@@ -84,8 +84,8 @@ export class StatusService {
       initiated: 'Инициирован',
     };
     const que_statuses = {
-      success: 'Верно',
-      failed: 'Неверно',
+      correct: 'Правильно',
+      incorrect: 'Неправильно',
       default: 'Неизвестно',
     };
     const owner_roles = {
@@ -100,7 +100,7 @@ export class StatusService {
       owner_role: Object.values(OwnerRole).map((role) => new RetrieveStatusDto({ value: role, title: owner_roles[role] })),
       code_status: Object.values(CodeStatus).map((status) => new RetrieveStatusDto({ value: status, title: code_statuses[status] })),
       quiz_status: Object.values(AttemptStatus).map((status) => new RetrieveStatusDto({ value: status, title: quiz_statuses[status] })),
-      que_result: Object.values(QuestionResult).map((status) => new RetrieveStatusDto({ value: status, title: que_statuses[status] })),
+      que_result: Object.values(QuestionState).map((status) => new RetrieveStatusDto({ value: status, title: que_statuses[status] })),
       models: chatgpt_models.map((model) => new RetrieveStatusDto({ value: model, title: model })),
     };
   }

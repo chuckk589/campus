@@ -3,12 +3,6 @@ import { CustomBaseEntity } from './CustomBaseEntity';
 import { QuizAnswer } from './QuizAnswer';
 import { QuizAttempt } from './QuizAttempt';
 
-export enum QuestionResult {
-  SUCCESS = 'success',
-  FAILED = 'failed',
-  DEFAULT = 'default',
-}
-
 @Entity()
 export class QuizAttemptAnswer extends CustomBaseEntity {
   @PrimaryKey()
@@ -20,8 +14,8 @@ export class QuizAttemptAnswer extends CustomBaseEntity {
   @Property({ default: false })
   answered?: boolean;
 
-  @Enum({ items: () => QuestionResult, default: QuestionResult.DEFAULT })
-  finalResult!: QuestionResult;
+  // @Enum({ items: () => QuestionState, default: QuestionState.DEFAULT })
+  // finalResult!: QuestionState;
 
   @ManyToOne(() => QuizAttempt)
   attempt: QuizAttempt;
