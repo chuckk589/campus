@@ -27,7 +27,7 @@ export class AttemptService {
   }
   async lazyload(body: IServerSideGetRowsRequest, user: ReqUser) {
     const qb = this.em.createQueryBuilder(QuizAttempt, 'qat');
-    qb.select(['qat.*', `SUM(CASE WHEN qa.state <> 'correct' THEN 1 ELSE 0 END) as unanswered`])
+    qb.select(['qat.*', `SUM(CASE WHEN qa.json_answer is NULL OR qa.state = 'incorrect' THEN 1 ELSE 0 END) as unanswered`])
       .leftJoin('qat.attemptAnswers', 'qaa')
       .leftJoin('qaa.answer', 'qa')
       .where({ user: { $ne: null }, ...(user.role == OwnerRole.ADMIN ? {} : { code: { createdBy: { id: user.id } } }) })
