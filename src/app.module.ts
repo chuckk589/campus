@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AppConfigModule } from './modules/app-config/app-config.module';
 import { LoggerModule } from 'nestjs-pino';
@@ -19,8 +19,9 @@ import { RestrictionModule } from './modules/restriction/restriction.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OwnerModule } from './modules/owner/owner.module';
 import { RedisModule } from './modules/redis/redis.module';
-import { PrometheusModule, makeCounterProvider, makeGaugeProvider } from '@willsoto/nestjs-prometheus';
+import { PrometheusModule, makeCounterProvider, makeGaugeProvider, makeHistogramProvider } from '@willsoto/nestjs-prometheus';
 import { MetricsMiddleware } from './common/metricsMiddleware';
+import { HttpLoggingInterceptor } from './common/http-logging.interceptor';
 
 @Module({
   imports: [
@@ -54,28 +55,42 @@ import { MetricsMiddleware } from './common/metricsMiddleware';
     AxiosRetryModule,
     RestrictionModule,
     OwnerModule,
-    PrometheusModule.register({
-      defaultMetrics: {
-        enabled: false,
-      },
-    }),
+    PrometheusModule.register(),
     // TestModule,
   ],
   controllers: [],
   providers: [
-    makeCounterProvider({
-      name: 'count',
-      help: 'metric_help',
-      labelNames: ['method', 'origin'] as string[],
+    makeHistogramProvider({
+      name: 'http_request_duration_ms',
+      help: 'Duration of HTTP requests in ms',
+      labelNames: ['route', 'method', 'code'],
+      // buckets for response time from 0.1ms to 500ms
+      buckets: [0.1, 5, 15, 50, 100, 200, 300, 400, 500],
     }),
-    makeGaugeProvider({
-      name: 'gauge',
-      help: 'metric_help',
+    makeCounterProvider({
+      name: 'http_request_total',
+      help: 'Total of HTTP request',
+      labelNames: ['route', 'method', 'code'],
+    }),
+    makeHistogramProvider({
+      name: 'http_response_size_bytes',
+      help: 'Size in bytes of response',
+      labelNames: ['route', 'method', 'code'],
+      buckets: [0.1, 5, 15, 50, 100, 200, 300, 400, 500],
+    }),
+    makeHistogramProvider({
+      name: 'http_request_size_bytes',
+      help: 'Size in bytes of request',
+      labelNames: ['route', 'method', 'code'],
+      buckets: [0.1, 5, 15, 50, 100, 200, 300, 400, 500],
     }),
   ],
 })
-export class AppModule {
+export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(MetricsMiddleware).forRoutes('/v1');
+    consumer
+      .apply(HttpLoggingInterceptor)
+      .exclude({ path: 'metrics', method: RequestMethod.GET }, { path: 'health', method: RequestMethod.GET })
+      .forRoutes('*');
   }
 }
