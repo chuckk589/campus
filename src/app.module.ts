@@ -55,7 +55,6 @@ import { MetricsMiddleware } from './common/metricsMiddleware';
     RestrictionModule,
     OwnerModule,
     PrometheusModule.register({
-      path: '/app-metrics',
       defaultMetrics: {
         enabled: false,
       },
