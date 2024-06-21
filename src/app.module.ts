@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AppConfigModule } from './modules/app-config/app-config.module';
 import { LoggerModule } from 'nestjs-pino';
@@ -86,7 +86,7 @@ import { HttpLoggingInterceptor } from './common/http-logging.interceptor';
     }),
   ],
 })
-export class AppModule implements NestModule {
+export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(HttpLoggingInterceptor)
