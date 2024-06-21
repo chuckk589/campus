@@ -92,7 +92,7 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(HttpLoggingInterceptor)
-      .exclude({ path: 'metrics', method: RequestMethod.GET }, { path: 'health', method: RequestMethod.GET })
+      .exclude({ path: 'metrics', method: RequestMethod.GET }, { path: 'assets', method: RequestMethod.GET })
       .forRoutes('*');
   }
 }
