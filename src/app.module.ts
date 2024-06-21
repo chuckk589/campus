@@ -76,6 +76,6 @@ import { MetricsMiddleware } from './common/metricsMiddleware';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(MetricsMiddleware).forRoutes('*');
+    consumer.apply(MetricsMiddleware).forRoutes('/v1');
   }
 }
