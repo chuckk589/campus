@@ -12,6 +12,7 @@ import { AgGridORMConverter } from 'src/types/agGridORM';
 import { Owner, OwnerRole } from '../mikroorm/entities/Owner';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { EntityManager } from '@mikro-orm/mysql';
+import { QuestionState } from '../mikroorm/entities/QuizAnswer';
 @Injectable()
 export class AttemptService {
   constructor(
@@ -59,6 +60,7 @@ export class AttemptService {
       }
       attemptAnswer.answer.jsonAnswer = updateAnswerDto.json;
       attemptAnswer.answer.updatedBy = this.em.getReference(Owner, user.id);
+      attemptAnswer.answer.state = QuestionState.DEFAULT;
       await this.em.persistAndFlush(attemptAnswer);
       await this.em.populate(attemptAnswer, ['answer.updatedBy']);
       return attemptAnswer;
