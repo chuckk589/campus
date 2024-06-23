@@ -135,10 +135,10 @@ export default {
               valueFormatter: (params) =>
                 params.data.disabled ? '*****' : params.value,
               cellStyle: (params) => {
-                if (params.data.status == 'correct') {
+                if (params.data.state == 'correct') {
                   return { backgroundColor: 'rgba(0, 128, 0, 0.1)' };
                 } else if (
-                  params.data.status == 'incorrect' ||
+                  params.data.state == 'incorrect' ||
                   !params.data.jsonAnswer
                 ) {
                   return { backgroundColor: 'rgba(255, 0, 0, 0.1)' };
