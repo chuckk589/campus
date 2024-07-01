@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { QuizResult } from '../mikroorm/entities/QuizResult';
 import { RetrieveResultDto } from './dto/retrieve-result.dto';
 import { ReqUser } from 'src/types/interfaces';
-import { OwnerRole } from '../mikroorm/entities/Owner';
 
 @Injectable()
 export class ResultsService {
@@ -13,7 +12,7 @@ export class ResultsService {
     const results = await this.em.find(
       QuizResult,
       {
-        ...(user.role == OwnerRole.ADMIN ? {} : { attempt: { code: { createdBy: user.id } } }),
+        ...(user.hasAdminRights() ? {} : { attempt: { code: { createdBy: user.id } } }),
       },
       { populate: ['attempt.user'] },
     );

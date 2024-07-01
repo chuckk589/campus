@@ -31,14 +31,20 @@ export class AttemptService {
     qb.select(['qat.*', `SUM(CASE WHEN qa.json_answer is NULL OR qa.state = 'incorrect' THEN 1 ELSE 0 END) as unanswered`])
       .leftJoin('qat.attemptAnswers', 'qaa')
       .leftJoin('qaa.answer', 'qa')
-      .where({ user: { $ne: null }, ...(user.role == OwnerRole.ADMIN ? {} : { code: { createdBy: { id: user.id } } }) })
+      .where({ user: { $ne: null }, ...(user.hasAdminRights() ? {} : { code: { createdBy: { id: user.id } } }) })
       .groupBy('qat.id')
       .limit(body.endRow - body.startRow)
       .offset(body.startRow);
+
     AgGridORMConverter.ApplyFilters(qb, body.filterModel, AttemptDto);
     AgGridORMConverter.ApplySort(qb, body.sortModel, AttemptDto);
     const attempts = await qb.getResultList();
-    await this.em.populate(attempts, ['user', 'attemptAnswers.answer.updatedBy']);
+
+    await this.em.populate(attempts, [
+      'user',
+      'attemptAnswers.answer.updatedBy',
+      ...((user.hasHistoryAccess() ? ['attemptAnswers.answer.quizStates'] : []) as any),
+    ]);
     return { rows: attempts };
   }
 
@@ -48,7 +54,7 @@ export class AttemptService {
     });
 
     //only allow admin or owner of code which is associated with the attempt to update the answer
-    if (user.role != OwnerRole.ADMIN && user.id != attemptAnswer.attempt?.code?.createdBy?.id) {
+    if (user.hasAdminRights() && user.id != attemptAnswer.attempt?.code?.createdBy?.id) {
       this.logger.warn(`User ${user.id} attempted to update answer ${attemptAnswerId} but is not the owner of the code`);
       throw new HttpException('Insufficient permissions', 405);
     }

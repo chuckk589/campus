@@ -5,9 +5,9 @@ import crypto from 'crypto';
 import { RetrieveCodeDto } from './dto/retrieve-code.dto';
 import { UpdateCodeDto } from './dto/update-code.dto';
 import { UserRestriction } from '../mikroorm/entities/UserRestriction';
-import { EntityManager, wrap } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/core';
 import { ReqUser } from 'src/types/interfaces';
-import { Owner, OwnerRole } from '../mikroorm/entities/Owner';
+import { Owner } from '../mikroorm/entities/Owner';
 
 @Injectable()
 export class CodeService {
@@ -51,7 +51,7 @@ export class CodeService {
     //return all codes associated with owner who created them, or all codes if user is admin
     const codes = await this.em.find(
       Code,
-      { ...(user.role == OwnerRole.ADMIN ? {} : { createdBy: { id: user.id } }) },
+      { ...(user.hasAdminRights() ? {} : { createdBy: { id: user.id } }) },
       { populate: ['attempt.user', 'createdBy'] },
     );
     const restrictions = await this.em.find(UserRestriction, {});

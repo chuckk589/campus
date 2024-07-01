@@ -37,7 +37,7 @@ export class QuizController {
   @Post('finish')
   @UseGuards(AuthVersionGuard, JwtAuthChromeGuard, UserStatusGuard)
   async finishQuiz(@Req() req: QuizAnswerRequest, @Body() finishQuizDto: FinishQuizDto) {
-    return this.quizService.finishQuiz(req.user.id, finishQuizDto);
+    return this.quizService.finishQuiz(req.user.attemptId, finishQuizDto);
   }
 
   @Post('answer/:page')
@@ -49,7 +49,7 @@ export class QuizController {
     @Body() updateQuizDto: UpdateQuizDto,
   ) {
     if (session) {
-      return this.quizService.getQuizAnswer(session, req.user.id, page, updateQuizDto);
+      return this.quizService.getQuizAnswer(session, req.user.attemptId, page, updateQuizDto);
     } else {
       throw new HttpException('No session cookie', 401);
     }

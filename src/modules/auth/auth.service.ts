@@ -3,7 +3,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Config } from '../mikroorm/entities/Config';
 import { Owner } from '../mikroorm/entities/Owner';
-import { ReqUser } from 'src/types/interfaces';
+import { ReqUser, ReqUserRaw } from 'src/types/interfaces';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +46,7 @@ export class AuthService {
     return allowedRoles.includes(entity.role);
   }
 
-  async login(user: ReqUser): Promise<ReqUser & { token: string }> {
+  async login(user: ReqUserRaw): Promise<ReqUserRaw & { token: string }> {
     return {
       ...user,
       token: this.jwtService.sign(user),

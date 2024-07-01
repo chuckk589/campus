@@ -1,7 +1,7 @@
 import { FilterQuery } from '@mikro-orm/core';
 import { JSDOM } from 'jsdom';
-import { CustomBaseEntity } from 'src/modules/mikroorm/entities/CustomBaseEntity';
-
+import { PERMISSIONS } from 'src/constants';
+import { OwnerRole } from 'src/modules/mikroorm/entities/Owner';
 /* eslint-disable no-constant-condition */
 export interface QuizAnswerRequest extends Request {
   user: {
@@ -9,9 +9,32 @@ export interface QuizAnswerRequest extends Request {
     name: string;
   };
 }
+
 export type RequestWithVersion = Request & { headers: { 'x-version': string } } & QuizAnswerRequest;
 export type RequestWithUser = Request & { user: ReqUser };
-export type ReqUser = { id: number; username: string; role: string; permissions: string[] };
+export type ReqUserRaw = { id: number; username: string; role: string; permissions: string[] };
+export class ReqUser implements ReqUserRaw {
+  constructor(user: ReqUserRaw) {
+    this.id = user.id;
+    this.username = user.username;
+    this.role = user.role;
+    this.permissions = user.permissions;
+  }
+  id: number;
+  username: string;
+  role: string;
+  permissions: string[];
+  hasHistoryAccess() {
+    return this.permissions.includes(PERMISSIONS.QUIZ_VIEW_STATE) || this.role == OwnerRole.ADMIN;
+  }
+  hasQuizAnswerEditAccess() {
+    return this.permissions.includes(PERMISSIONS.QUIZ_EDIT_OWN) || this.role == OwnerRole.ADMIN;
+  }
+  hasAdminRights() {
+    return this.role == OwnerRole.ADMIN;
+  }
+}
+
 export type QuestionType = 0 | 1 | 2 | 3;
 export type QuestionPayload<T> = T extends 0 | 2
   ? { subject: string; options: string[] }
@@ -36,7 +59,7 @@ export type ParsedQuizAnswer<T extends QuestionType> = {
  * https://campus.fa.ru/course/view.php?id=29887
  */
 //https://campus.fa.ru/mod/quiz/view.php?id=186319 checkbox images
-//https://campus.fa.ru/mod/quiz/attempt.php?attempt=1020486&cmid=483589&page=2 select example
+//https://campus.fa.ru/mod/quiz/view.php?id=483589 select example
 //https://campus.fa.ru/mod/quiz/attempt.php?attempt=1025831&cmid=483591&page=16 radio example with image in answers
 export class HTMLCampusParser {
   //legacy, dont touch

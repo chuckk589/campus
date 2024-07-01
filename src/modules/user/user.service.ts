@@ -4,7 +4,6 @@ import { User } from '../mikroorm/entities/User';
 import { UserRestriction } from '../mikroorm/entities/UserRestriction';
 import { ReqUser } from 'src/types/interfaces';
 import { EntityManager } from '@mikro-orm/mysql';
-import { OwnerRole } from '../mikroorm/entities/Owner';
 
 @Injectable()
 export class UserService {
@@ -18,7 +17,7 @@ export class UserService {
       .select('u.*')
       .from(User)
       .where(
-        user.role == OwnerRole.ADMIN
+        user.hasAdminRights()
           ? 'true'
           : `u.id IN (SELECT DISTINCT user_id FROM quiz_attempt WHERE code_id IN (SELECT id FROM code WHERE created_by_id = ${user.id}))`,
       )
