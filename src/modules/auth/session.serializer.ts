@@ -1,11 +1,13 @@
 import { PassportSerializer } from '@nestjs/passport';
-import { ReqUser } from 'src/types/interfaces';
+import { PERMISSIONS } from 'src/constants';
+import { ReqUser, ReqUserRaw } from 'src/types/interfaces';
+import { OwnerRole } from '../mikroorm/entities/Owner';
 
 export class SessionSerializer extends PassportSerializer {
-  serializeUser(user: ReqUser, done: CallableFunction): any {
+  serializeUser(user: ReqUserRaw, done: CallableFunction): any {
     done(null, user);
   }
-  deserializeUser(payload: any, done: CallableFunction): any {
-    done(null, payload);
+  deserializeUser(payload: ReqUserRaw, done: CallableFunction): any {
+    done(null, new ReqUser(payload));
   }
 }
