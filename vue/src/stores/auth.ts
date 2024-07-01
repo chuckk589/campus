@@ -10,6 +10,14 @@ export const useAuthStore = defineStore({
     user: JSON.parse(localStorage.getItem('user')),
     returnUrl: null,
   }),
+  getters: {
+    canViewHistory: (state) => {
+      return (
+        state.user?.role == 'admin' ||
+        state.user?.permissions.includes('quiz_view_state')
+      );
+    },
+  },
   actions: {
     async login(username: string, password: string) {
       const user = await axiosInstance({
