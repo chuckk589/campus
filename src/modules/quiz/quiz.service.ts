@@ -78,7 +78,7 @@ export class QuizService {
         await this.em.persistAndFlush([newQuizAttempt, code]);
         await wrap(newQuizAttempt).init();
         const token = this.jwtService.sign(
-          { id: newQuizAttempt.id },
+          { attemptId: newQuizAttempt.id },
           { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '6h' },
         );
         return { token };

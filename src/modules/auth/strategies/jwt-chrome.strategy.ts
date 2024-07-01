@@ -13,7 +13,7 @@ export class JwtChromeStrategy extends PassportStrategy(Strategy, 'chrome') {
     });
   }
 
-  async validate(payload: any) {
-    return { id: payload.id, exp: payload.exp };
+  async validate(payload: { attemptId: number; id: number; exp: number }) {
+    return { attemptId: payload.attemptId, exp: payload.exp };
   }
 }

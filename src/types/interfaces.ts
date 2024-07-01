@@ -5,7 +5,7 @@ import { CustomBaseEntity } from 'src/modules/mikroorm/entities/CustomBaseEntity
 /* eslint-disable no-constant-condition */
 export interface QuizAnswerRequest extends Request {
   user: {
-    id: string;
+    attemptId: string;
     name: string;
   };
 }

@@ -11,7 +11,7 @@ export class UserStatusStrategy extends PassportStrategy(Strategy, 'userstatus')
   }
 
   async validate(req: QuizAnswerRequest) {
-    const validate = await this.authService.validateUserStatus(+req.user.id);
+    const validate = await this.authService.validateUserStatus(+req.user.attemptId);
     if (validate) {
       return req.user;
     } else {
