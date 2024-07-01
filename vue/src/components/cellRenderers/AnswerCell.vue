@@ -1,9 +1,24 @@
 <template>
   <v-card class="question">
-    <div ref="question" v-html="params.data.html" class="ma-3"></div>
+    <!-- <div ref="question" v-html="params.data.html" class="ma-3"></div> -->
+    <HTMLAnswer
+      :html="params.data.html"
+      :jsonAnswer="params.data.jsonAnswer"
+      :questionType="params.data.question_type"
+      ref="question"
+    ></HTMLAnswer>
     <v-card-actions>
       <v-btn
         class="ml-auto"
+        :variant="history ? 'tonal' : 'outlined'"
+        density="compact"
+        small
+        :disabled="!store.canViewHistory"
+        @click="toggleHistory"
+      >
+        {{ 'История (' + params.data.states.length + ')' }}
+      </v-btn>
+      <v-btn
         variant="outlined"
         density="compact"
         small
@@ -16,37 +31,42 @@
         Сохранить
       </v-btn>
     </v-card-actions>
+    <div class="overflow-auto" v-if="history">
+      <v-card
+        v-for="item in params.data.states"
+        :key="item"
+        variant="outlined"
+        class="mb-1"
+      >
+        <v-card-title>{{
+          new Date(item.updatedAt).toLocaleString()
+        }}</v-card-title>
+        <HTMLAnswer
+          :html="params.data.html"
+          :jsonAnswer="item.jsonAnswer"
+          :questionType="params.data.question_type"
+          :locked="true"
+        ></HTMLAnswer>
+      </v-card>
+    </div>
   </v-card>
 </template>
 
 <script>
-import { HTMLCampusParser } from '../../plugins/htmlparser';
+import HTMLAnswer from '../../components/HTMLAnswer.vue';
+import { useAuthStore } from '@/stores/auth';
+
 export default {
   name: 'AnswerCell',
+  components: {
+    HTMLAnswer,
+  },
   data() {
     return {
       loading: false,
+      states: [],
+      history: false,
     };
-  },
-  mounted() {
-    this.$refs.question
-      .querySelectorAll('[data-region=answer-label]')
-      .forEach((answerLabel) => {
-        answerLabel.addEventListener('click', (e) => {
-          const labelId = e.currentTarget.id;
-          this.$refs.question
-            .querySelector('[aria-labelledby="'.concat(labelId, '"]'))
-            .click();
-        });
-      });
-    //fill inputs
-    if (this.params.data.jsonAnswer) {
-      HTMLCampusParser.bde_mainfunc(
-        this.params.data.jsonAnswer,
-        this.params.data.question_type,
-        this.$refs.question,
-      );
-    }
   },
   methods: {
     ai() {
@@ -99,20 +119,23 @@ export default {
           this.loading = false;
         });
     },
+    toggleHistory() {
+      this.history = !this.history;
+    },
     save() {
       this.$http({
         method: 'PUT',
         url: `${this.params.url}${this.params.data.id}`,
         data: {
-          json: HTMLCampusParser.bde_get_answer(
-            this.params.data.question_type,
-            this.$refs.question,
-          ),
+          json: this.$refs.question.bakeAnswer(),
         },
       }).then((res) => {
         this.$emitter.emit('edit-answer', res.data);
       });
     },
+  },
+  computed: {
+    store: () => useAuthStore(),
   },
 };
 </script>
