@@ -50,7 +50,7 @@ export class AttemptService {
 
   async updatePattern(user: ReqUser, attemptAnswerId: number, updateAnswerDto: UpdateAnswerDto) {
     const attemptAnswer = await this.em.findOneOrFail(QuizAttemptAnswer, attemptAnswerId, {
-      populate: ['answer', 'attempt.code.createdBy'],
+      populate: ['answer', 'attempt.code.createdBy', 'answer.quizStates'],
     });
 
     //only allow admin or owner of code which is associated with the attempt to update the answer

@@ -1,6 +1,7 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { BeforeUpdate, Collection, Entity, Enum, FlushEventArgs, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { CustomBaseEntity } from './CustomBaseEntity';
 import { Owner } from './Owner';
+import { QuizAnswerState } from './QuizAnswerState';
 
 export enum QuestionState {
   CORRECT = 'correct',
@@ -30,4 +31,7 @@ export class QuizAnswer extends CustomBaseEntity {
 
   @Enum({ items: () => QuestionState, default: QuestionState.DEFAULT })
   state!: QuestionState;
+
+  @OneToMany(() => QuizAnswerState, (item) => item.quizAnswer, { orphanRemoval: true })
+  quizStates = new Collection<QuizAnswerState>(this);
 }

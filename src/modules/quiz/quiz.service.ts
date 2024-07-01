@@ -17,6 +17,7 @@ import { QuizResult } from '../mikroorm/entities/QuizResult';
 import fs from 'fs';
 import { AxiosRetryService } from '../axios-retry/axios-retry.service';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
+import { QuizAnswerState } from '../mikroorm/entities/QuizAnswerState';
 
 @Injectable()
 export class QuizService {
@@ -40,25 +41,34 @@ export class QuizService {
     quiz.isProctoring = updateQuizDto.isFrame;
     await this.em.persistAndFlush(quiz);
     const token = this.jwtService.sign(
-      { id: quiz.id, cmid: quiz.cmid, path: updateQuizDto.name },
+      { attemptId: quiz.id, cmid: quiz.cmid, path: updateQuizDto.name },
       { secret: this.appConfigService.get<string>('jwt_secret'), expiresIn: '6h' },
     );
     return token;
   }
   async finishQuiz(id: string, finishQuizDto: FinishQuizDto) {
     const quiz = await this.em.findOne(QuizAttempt, { id: +id }, { populate: ['attemptAnswers.answer'] });
+    const states: QuizAnswerState[] = [];
     if (quiz.result) throw new HttpException('Тест уже завершен', HttpStatus.BAD_REQUEST);
     const answers = quiz.attemptAnswers.getItems();
-    answers.forEach((attemptAnswer) => {
-      if (finishQuizDto.correctQuestions.find((item) => +item == attemptAnswer.nativeId)) {
-        attemptAnswer.answer.state = QuestionState.CORRECT;
-      } else {
-        attemptAnswer.answer.state = QuestionState.INCORRECT;
+    for (const answer of finishQuizDto.questions) {
+      const attemptAnswer = answers.find((item) => item.nativeId == +answer.value);
+      if (attemptAnswer) {
+        attemptAnswer.answer.state = answer.state;
+        if (answer.state == QuestionState.INCORRECT && attemptAnswer.answer.jsonAnswer) {
+          states.push(
+            this.em.create(QuizAnswerState, {
+              quizAnswer: attemptAnswer.answer,
+              jsonAnswer: attemptAnswer.answer.jsonAnswer,
+              state: answer.state,
+            }),
+          );
+        }
       }
-    });
+    }
     quiz.attemptStatus = AttemptStatus.FINISHED;
     quiz.result = new QuizResult(finishQuizDto.summaryData);
-    await this.em.persistAndFlush(quiz);
+    await this.em.persistAndFlush([quiz, ...states]);
     return new QuizResult(finishQuizDto.summaryData);
   }
   async createQuiz(createQuizDto: CreateQuizDto) {
@@ -67,13 +77,7 @@ export class QuizService {
       if (code.status !== CodeStatus.ACTIVE) {
         throw new HttpException('Код уже активирован', 400);
       } else {
-        // const existingUser = await this.findOrCreateUser(createQuizDto.user);
-        const newQuizAttempt = this.em.create(QuizAttempt, {
-          code: code,
-          // user: existingUser,
-          // cmid: createQuizDto.cmid,
-          // path: createQuizDto.path,
-        });
+        const newQuizAttempt = this.em.create(QuizAttempt, { code });
         code.status = CodeStatus.USED;
         await this.em.persistAndFlush([newQuizAttempt, code]);
         await wrap(newQuizAttempt).init();
@@ -160,6 +164,7 @@ export class QuizService {
 
       quiz.questionAmount = questions.length;
       quiz.attemptStatus = AttemptStatus.IN_PROGRESS;
+      //TODO: consider copying all answers from existing quiz at once instead of 1 by 1 question quering
       for (const question of questions) {
         const url = question.getAttribute('href');
         const nativeId = parseInt(url.split('page=').pop()) || 0;
