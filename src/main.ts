@@ -15,6 +15,7 @@ async function bootstrap() {
   app.use(
     session({
       store: redisStore,
+      resave: true,
       secret: process.env.EXPRESS_SESSION_SECRET,
       saveUninitialized: false,
     }),

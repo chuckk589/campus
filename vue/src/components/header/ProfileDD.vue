@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
-const swt1 = ref(true);
-const swt2 = ref(false);
 const authStore = useAuthStore();
 </script>
 

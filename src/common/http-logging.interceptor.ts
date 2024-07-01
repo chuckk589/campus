@@ -17,7 +17,6 @@ export class HttpLoggingInterceptor implements NestMiddleware {
     @InjectMetric('http_request_size_bytes')
     private readonly requestSizeHistogram: Histogram<string>,
   ) {}
-
   use(request: Request, response: Response, next: NextFunction): void {
     const startAt = process.hrtime();
     response.on('finish', () => {

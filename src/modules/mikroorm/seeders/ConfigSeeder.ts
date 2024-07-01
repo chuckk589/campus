@@ -21,7 +21,9 @@ export class ConfigSeeder extends Seeder {
       );
     await em.getConnection().execute(
       `INSERT INTO permission (created_at, updated_at, name, display_name) VALUES 
-        (now(), now(),'quiz_edit_own', 'Редактирование своих тестов') ON DUPLICATE KEY UPDATE name=name;`,
+        (now(), now(),'quiz_edit_own', 'Редактирование своих тестов'),
+        (now(), now(),'quiz_view_state', 'Доступ к истории ответов')
+        ON DUPLICATE KEY UPDATE name=name;`,
     );
     //password: 123
     await em
