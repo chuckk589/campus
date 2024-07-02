@@ -54,7 +54,7 @@ export class AttemptService {
     });
 
     //only allow admin or owner of code which is associated with the attempt to update the answer
-    if (user.hasAdminRights() && user.id != attemptAnswer.attempt?.code?.createdBy?.id) {
+    if (!user.hasAdminRights() && user.id != attemptAnswer.attempt?.code?.createdBy?.id) {
       this.logger.warn(`User ${user.id} attempted to update answer ${attemptAnswerId} but is not the owner of the code`);
       throw new HttpException('Insufficient permissions', 405);
     }
@@ -76,7 +76,9 @@ export class AttemptService {
   }
 
   async update(id: number, updateAttemptDto: UpdateAttemptDto) {
-    const attempt = await this.em.findOneOrFail(QuizAttempt, id, { populate: ['user', 'attemptAnswers.answer'] });
+    const attempt = await this.em.findOneOrFail(QuizAttempt, id, {
+      populate: ['user', 'attemptAnswers.answer', 'attemptAnswers.answer.quizStates'],
+    });
     attempt.attemptStatus = updateAttemptDto.status;
     attempt.editable = updateAttemptDto.editable;
     await this.em.persistAndFlush(attempt);

@@ -1,5 +1,3 @@
-import { PERMISSIONS } from 'src/constants';
-import { OwnerRole } from 'src/modules/mikroorm/entities/Owner';
 import { QuizAnswerState } from 'src/modules/mikroorm/entities/QuizAnswerState';
 import { QuizAttemptAnswer } from 'src/modules/mikroorm/entities/QuizAttemptAnswer';
 import { ReqUser } from 'src/types/interfaces';

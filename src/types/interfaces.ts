@@ -14,7 +14,7 @@ export type RequestWithVersion = Request & { headers: { 'x-version': string } } 
 export type RequestWithUser = Request & { user: ReqUser };
 export type ReqUserRaw = { id: number; username: string; role: string; permissions: string[] };
 export class ReqUser implements ReqUserRaw {
-  constructor(user: ReqUserRaw) {
+  constructor(user: Partial<ReqUserRaw>) {
     this.id = user.id;
     this.username = user.username;
     this.role = user.role;
@@ -25,10 +25,10 @@ export class ReqUser implements ReqUserRaw {
   role: string;
   permissions: string[];
   hasHistoryAccess() {
-    return this.permissions.includes(PERMISSIONS.QUIZ_VIEW_STATE) || this.role == OwnerRole.ADMIN;
+    return this.role == OwnerRole.ADMIN || this.permissions.includes(PERMISSIONS.QUIZ_VIEW_STATE);
   }
   hasQuizAnswerEditAccess() {
-    return this.permissions.includes(PERMISSIONS.QUIZ_EDIT_OWN) || this.role == OwnerRole.ADMIN;
+    return this.role == OwnerRole.ADMIN || this.permissions.includes(PERMISSIONS.QUIZ_EDIT_OWN);
   }
   hasAdminRights() {
     return this.role == OwnerRole.ADMIN;

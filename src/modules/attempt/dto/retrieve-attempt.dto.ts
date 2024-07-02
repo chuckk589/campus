@@ -5,7 +5,7 @@ import { OwnerRole } from 'src/modules/mikroorm/entities/Owner';
 import { ReqUser } from 'src/types/interfaces';
 
 export class RetrieveAttemptDto {
-  constructor(attempt: QuizAttempt, user: ReqUser = { role: OwnerRole.ADMIN } as ReqUser) {
+  constructor(attempt: QuizAttempt, user: ReqUser = new ReqUser({ role: OwnerRole.ADMIN })) {
     const attemptAnswers = attempt.attemptAnswers?.getItems();
     this.id = attempt.id.toString();
     this.attemptId = attempt.attemptId?.toString();
