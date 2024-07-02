@@ -17,6 +17,8 @@ import { TestModule } from 'src/modules/test/test.module';
 import { UserModule } from 'src/modules/user/user.module';
 import MikroORMOptions from './utils/mikro-orm.test.config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { OwnerModule } from 'src/modules/owner/owner.module';
+import { RedisModule } from 'src/modules/redis/redis.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AxiosRetryModule,
     RestrictionModule,
     TestModule,
+    RedisModule,
+    OwnerModule,
   ],
   controllers: [],
   providers: [],
