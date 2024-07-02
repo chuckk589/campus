@@ -23,7 +23,7 @@ INSERT INTO `config` (`id`, `name`, `value`, `description`, `category`) VALUES
 (2,	'VERSION',	'12.433.2',	'Текущая версия приложения',	NULL),
 (3,	'QUESTION_TIME',	'14-26',	'Время на ответ на вопрос мин - макс, в секундах, через дефис',	NULL),
 (4,	'HOSTNAME',	'http://89.19.216.119',	'Адрес сервера, используется при генерации расширения',	NULL),
-(5,	'OPENAI_API_KEY',	'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',	'Ключ OpenAI API',	'secret'),
+(5,	'OPENAI_API_KEY',	'sk-222',	'Ключ OpenAI API',	'secret'),
 (6,	'OPENAI_MODEL',	'gpt-4-vision-preview',	'Модель OpenAI',	''),
 (13,	'OPENAI_REPEATS',	'3',	NULL,	NULL);
 
