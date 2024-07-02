@@ -1,4 +1,4 @@
-# Installation
+<!-- # Installation
 - ## Setting up systemctl service
     > This is necessary to update ufw rules every time the server restarts and docker container ip changes.
     1. ### install ufw-docker
@@ -29,5 +29,5 @@
 - ## run app
     ```bash
     bash dbp.sh
-    ```
+    ``` -->
     
